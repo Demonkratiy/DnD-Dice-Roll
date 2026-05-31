@@ -66,7 +66,9 @@ export function Stage({ request, rollSource, reducedMotion, onResult }: StagePro
   return (
     <section className={styles.stage} aria-label="Сцена броска">
       <div
-        className={`${styles.tray} ${isPressing ? styles.shaking : ''}`}
+        className={`${styles.tray} ${isPressing ? styles.shaking : ''} ${
+          reducedMotion ? styles.still : ''
+        }`}
         style={{ '--shake': intensity } as React.CSSProperties}
         role="button"
         tabIndex={0}

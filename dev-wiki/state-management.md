@@ -13,7 +13,7 @@
 ```mermaid
 flowchart TB
     subgraph App["app-слой · глобальное состояние (Context + провайдеры)"]
-        Theme["ThemeProvider<br/>useState + localStorage"]
+        Theme["ShapeProvider<br/>useState + localStorage"]
         Settings["SettingsProvider<br/>useState + localStorage"]
         Log["RollLogProvider<br/>useReducer (события)"]
     end
@@ -33,13 +33,14 @@ flowchart TB
 
 Живёт в `src/app/providers` и `src/shared/theme`. Композируется в
 [AppProviders.tsx](../src/app/providers/AppProviders.tsx):
-`ThemeProvider → SettingsProvider → RollLogProvider`.
+`ShapeProvider → ColorProvider → SettingsProvider → RollLogProvider`.
 
 | Состояние | Где | Механизм | Хук доступа |
 |-----------|-----|----------|-------------|
 | Лог бросков | [RollLogProvider.tsx](../src/app/providers/RollLogProvider.tsx) | `useReducer` + [logReducer.ts](../src/entities/roll/model/logReducer.ts) | `useRollLog()` |
 | Настройки UI | [SettingsProvider.tsx](../src/app/providers/SettingsProvider.tsx) | `useState` + `localStorage` | `useSettings()` |
-| Тема | [ThemeProvider.tsx](../src/shared/theme/ThemeProvider.tsx) | `useState` + `localStorage` + `data-theme` | `useTheme()` |
+| Стиль (форма) | [ShapeProvider.tsx](../src/shared/theme/shape/ShapeProvider.tsx) | `useState` + `localStorage` + `data-theme-shapes` | `useShape()` |
+| Палитра (цвет) | [ColorProvider.tsx](../src/shared/theme/color/ColorProvider.tsx) | `useState` + `localStorage` + `data-theme-colors` | `useColor()` |
 
 **Паттерн React 19:** контекст и хук вынесены в отдельный `.ts`-файл (например
 [rollLogContext.ts](../src/app/providers/rollLogContext.ts)), а компонент-провайдер —

@@ -6,7 +6,7 @@
  */
 
 import type { ReactNode } from 'react'
-import { ThemeProvider } from '@shared/theme'
+import { ShapeProvider, ColorProvider } from '@shared/theme'
 import { RollLogProvider } from './RollLogProvider.tsx'
 import { SettingsProvider } from './SettingsProvider.tsx'
 
@@ -16,10 +16,12 @@ interface AppProvidersProps {
 
 export function AppProviders({ children }: AppProvidersProps) {
   return (
-    <ThemeProvider>
-      <SettingsProvider>
-        <RollLogProvider>{children}</RollLogProvider>
-      </SettingsProvider>
-    </ThemeProvider>
+    <ShapeProvider>
+      <ColorProvider>
+        <SettingsProvider>
+          <RollLogProvider>{children}</RollLogProvider>
+        </SettingsProvider>
+      </ColorProvider>
+    </ShapeProvider>
   )
 }

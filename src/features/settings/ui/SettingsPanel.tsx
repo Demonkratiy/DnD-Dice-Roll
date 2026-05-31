@@ -6,7 +6,14 @@
  */
 
 import { Switch, Segmented } from '@shared/ui'
-import { useTheme, THEMES, type ThemeId } from '@shared/theme'
+import {
+  useShape,
+  SHAPES,
+  type ShapeId,
+  useColor,
+  COLORS,
+  type ColorId,
+} from '@shared/theme'
 import styles from './SettingsPanel.module.css'
 
 export interface SettingsPanelProps {
@@ -26,13 +33,15 @@ export function SettingsPanel({
   disableAnimations,
   onDisableAnimationsChange,
 }: SettingsPanelProps) {
-  const { themeId, setTheme } = useTheme()
+  const { shapeId, setShape } = useShape()
+  const { colorId, setColor } = useColor()
 
   if (!open) {
     return null
   }
 
-  const themeOptions = THEMES.map((theme) => ({ value: theme.id, label: theme.name }))
+  const themeOptions = SHAPES.map((shape) => ({ value: shape.id, label: shape.name }))
+  const accentOptions = COLORS.map((color) => ({ value: color.id, label: color.name }))
 
   return (
     <div className={styles.overlay} onClick={onClose}>
@@ -55,8 +64,18 @@ export function SettingsPanel({
           <Segmented
             label="Тема оформления"
             options={themeOptions}
-            value={themeId}
-            onChange={(value: ThemeId) => setTheme(value)}
+            value={shapeId}
+            onChange={(value: ShapeId) => setShape(value)}
+          />
+        </div>
+
+        <div className={styles.group}>
+          <span className={styles.groupLabel}>Цвет</span>
+          <Segmented
+            label="Цветовая палитра"
+            options={accentOptions}
+            value={colorId}
+            onChange={(value: ColorId) => setColor(value)}
           />
         </div>
 

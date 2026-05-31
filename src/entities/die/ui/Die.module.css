@@ -28,7 +28,7 @@
 
 .selected .shape {
   fill: var(--die-fill-active);
-  filter: drop-shadow(0 0 10px var(--die-halo));
+  filter: drop-shadow(0 0 8px var(--die-halo)) drop-shadow(0 0 18px var(--die-halo));
 }
 
 /* Состояние перебора форм — лёгкое размытие для динамики. */

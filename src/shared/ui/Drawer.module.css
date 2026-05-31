@@ -42,7 +42,7 @@
   height: 3.2rem;
   border-radius: 50%;
   border: 1px solid var(--border);
-  background: var(--accent);
+  background: var(--accent-soft);
   color: var(--accent-contrast);
   font-size: 1.4rem;
   cursor: pointer;
@@ -65,6 +65,13 @@
 .body {
   padding: 0.5rem 1.25rem 1.5rem;
   overflow-y: auto;
+  transition: opacity 0.18s ease;
+}
+
+/* В свёрнутом состоянии контент не должен «выглядывать» из-за нижнего края. */
+.bodyHidden {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .title {

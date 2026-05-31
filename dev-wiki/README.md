@@ -17,6 +17,10 @@
 ## Содержание
 
 - [Управление состоянием (state management)](./state-management.md)
+- [Система тем (theming)](./theming.md)
+- [Анимация и жест броска](./animation-and-gesture.md)
+- [Доменное ядро броска и задел под мультиплеер](./rolling-domain.md)
+- [Силуэты кубиков (SVG-геометрия)](./dice-silhouettes.md)
 
 ## Как добавлять
 

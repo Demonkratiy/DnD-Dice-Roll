@@ -1,5 +1,5 @@
 /**
- * Drawer — нижняя выезжающая панель с хэндлом-«пером».
+ * Drawer — нижняя выезжающая панель с хэндлом.
  *
  * Хэндл всегда виден внизу по центру. Тап по нему — открыть/закрыть; свайп вверх —
  * открыть, свайп вниз — закрыть. Открытая панель наезжает ПОВЕРХ контента и
@@ -12,7 +12,7 @@ import styles from './Drawer.module.css'
 export interface DrawerProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  /** Иконка/символ на хэндле (например перо ✒️). */
+  /** Иконка/символ на хэндле. */
   handleIcon: ReactNode
   handleLabel: string
   title?: string
@@ -75,7 +75,7 @@ export function Drawer({
           <span className={styles.handleIcon}>{handleIcon}</span>
         </button>
 
-        <div className={styles.body}>
+        <div className={`${styles.body} ${open ? '' : styles.bodyHidden}`}>
           {title && <h2 className={styles.title}>{title}</h2>}
           {children}
         </div>

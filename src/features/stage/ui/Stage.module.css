@@ -20,11 +20,17 @@
   border-radius: 24px;
   background: var(--surface);
   border: 1px solid var(--border);
-  box-shadow: var(--shadow);
+  /* Базовое мягкое свечение акцентом + обычная тень.
+   * Сила свечения (--stage-glow) задаётся стилем: на тёмном неоне ярче. */
+  box-shadow: var(--shadow),
+    0 0 48px color-mix(in srgb, var(--accent) var(--stage-glow, 16%), transparent);
+  /* «Эмоция» палитры: характер пульсации свечения задаёт токен --stage-pulse
+   * (огонь мерцает, холод переливается, молния вспыхивает и т.д.). */
+  animation: var(--stage-pulse, none);
   cursor: pointer;
   user-select: none;
   touch-action: none; /* чтобы зажатие не скроллило страницу */
-  transition: box-shadow 0.2s ease;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .tray:focus-visible {
@@ -32,9 +38,20 @@
   outline-offset: 3px;
 }
 
+/* Отключённые анимации (опция настроек / prefers-reduced-motion):
+ * гасим ambient-пульс — остаётся статичное свечение. */
+.still {
+  animation: none;
+}
+
 /* Подрагивание всей сцены при зажатии (амплитуда — от --shake 0..1). */
 .shaking {
   animation: tray-shake 0.12s linear infinite;
+  /* Свечение усиливается с интенсивностью зажатия (--shake 0..1). */
+  border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
+  box-shadow: var(--shadow),
+    0 0 calc(48px + var(--shake, 0) * 56px)
+      color-mix(in srgb, var(--accent) calc(30% + var(--shake, 0) * 45%), transparent);
 }
 
 /* Каждый кубик дрожит чуть по-своему. */
@@ -103,6 +120,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .tray,
   .shaking,
   .jitter {
     animation: none;

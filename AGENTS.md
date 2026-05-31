@@ -64,7 +64,7 @@ src/
     ui/        ui-kit: Button, IconButton, Stepper, Segmented, Drawer, Switch
     lib/       утилиты и хуки: rng, usePressAndShake, useRollAnimation, useReducedMotion
     services/  RollSource (+ LocalRollSource, TODO RemoteRollSource), audio
-    theme/     tokens.css, themes.ts, useTheme
+    theme/     tokens.css, shape/ (shapes + ShapeProvider), color/ (colors + ColorProvider)
     config/    константы (набор кубиков, дефолты)
 ```
 
@@ -102,12 +102,30 @@ npm run test:watch # Vitest в watch-режиме
 - Технические разборы «как что реализовано» складываем в [`dev-wiki/`](./dev-wiki/README.md)
   (Markdown + диаграммы Mermaid). Новый документ — добавляем ссылку в `dev-wiki/README.md`.
 
+## 7.1. Dev-wiki: читай перед работой над темой
+
+`AGENTS.md` грузится в каждую сессию автоматически. **dev-wiki — нет**: это
+справочник по запросу. Поэтому, прежде чем менять подсистему из таблицы ниже,
+сначала прочитай соответствующий документ (там — текущее устройство и планы),
+а после значимых изменений — обнови его.
+
+| Тема / подсистема | Документ |
+| ----------------- | -------- |
+| Состояние, провайдеры, reducer, поток данных | [`dev-wiki/state-management.md`](./dev-wiki/state-management.md) |
+| Темы, CSS-токены, оси «стиль»/«цвет», палитры | [`dev-wiki/theming.md`](./dev-wiki/theming.md) |
+| Анимация броска, жест press/shake, оркестрация | [`dev-wiki/animation-and-gesture.md`](./dev-wiki/animation-and-gesture.md) |
+| Доменное ядро броска, RNG, RollSource, мультиплеер | [`dev-wiki/rolling-domain.md`](./dev-wiki/rolling-domain.md) |
+| SVG-силуэты кубиков, вариации форм, FrameProvider | [`dev-wiki/dice-silhouettes.md`](./dev-wiki/dice-silhouettes.md) |
+
+Если документа по теме ещё нет — создай его и добавь строку в эту таблицу и в
+`dev-wiki/README.md`.
+
 ## 8. Статус (обновляется по ходу)
 
 - [x] Фаза 0 — миграция на TypeScript, структура FSD-lite, Vitest.
 - [x] Фаза 1 — доменное ядро (die/roll, rng, rollDice + тесты).
 - [x] Фаза 2 — состояние и сервисы (RollSource, reducer логов, audio-задел).
-- [x] Фаза 3 — темы (flat/neon, CSS-токены, ThemeProvider).
+- [x] Фаза 3 — темы (flat/neon, CSS-токены, две оси: ShapeProvider + ColorProvider).
 - [x] Фаза 4 — кубик, силуэты, анимация (scramble→settle→reveal), жест, Сцена.
 - [x] Фаза 5 — UI и компоновка (ui-kit, dice-picker, roll-controls, settings, log Drawer).
 - [x] Фаза 6 — финальная актуализация документации + проверки (typecheck/lint/test/build зелёные).

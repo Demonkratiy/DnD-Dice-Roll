@@ -1,11 +1,39 @@
 /**
  * LogDrawer — выезжающая снизу панель с историей бросков.
- * Хэндл-«перо» открывает/закрывает панель. Данные приходят пропсами (app-слой).
+ * Хэндл-«око с книгой» открывает/закрывает панель. Данные приходят пропсами (app-слой).
  */
 
 import { Drawer } from '@shared/ui'
 import type { RollResult } from '@entities/roll'
 import styles from './LogDrawer.module.css'
+
+/**
+ * Иконка-«всевидящее око» с раскрытой книгой вместо зрачка: плоский линейный SVG
+ * в стиле силуэтов кубиков. Цвет наследуется из `currentColor`
+ * (на хэндле — `--accent-contrast`).
+ */
+function EyeBookIcon() {
+  return (
+    <svg
+      width="40"
+      height="40"
+      viewBox="70 120 372 272"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="18"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {/* Контур глаза */}
+      <path d="M84 256C132 190 202 154 256 154C310 154 380 190 428 256C380 322 310 358 256 358C202 358 132 322 84 256Z" />
+      {/* Книга-зрачок: корешок + две страницы */}
+      <path d="M256 206 L256 312" />
+      <path d="M256 212 Q230 198 206 208 L206 306 Q230 296 256 310" />
+      <path d="M256 212 Q282 198 306 208 L306 306 Q282 296 256 310" />
+    </svg>
+  )
+}
 
 export interface LogDrawerProps {
   entries: RollResult[]
@@ -32,7 +60,7 @@ export function LogDrawer({ entries, open, onOpenChange, onClear }: LogDrawerPro
     <Drawer
       open={open}
       onOpenChange={onOpenChange}
-      handleIcon="✒️"
+      handleIcon={<EyeBookIcon />}
       handleLabel="История бросков"
       title="История бросков"
     >
