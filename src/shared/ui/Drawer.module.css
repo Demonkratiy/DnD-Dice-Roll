@@ -42,8 +42,10 @@
   height: 3.2rem;
   border-radius: 50%;
   border: 1px solid var(--border);
-  background: var(--accent-soft);
-  color: var(--accent-contrast);
+  /* Консистентно с прочими контролами: лёгкая акцентная заливка фона +
+   * иконка акцента палитры; при наведении заливка акцентом (см. :hover). */
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+  color: var(--accent);
   font-size: 1.4rem;
   cursor: pointer;
   touch-action: none;
@@ -51,6 +53,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: background 0.15s ease;
+}
+
+.handle:hover {
+  background: var(--accent);
+  color: var(--control-on-accent);
 }
 
 .handle:focus-visible {

@@ -84,7 +84,7 @@ export function Stage({ request, rollSource, reducedMotion, onResult }: StagePro
             frameIndex={d.frameIndex}
             emphasis={getEmphasis(d.value)}
             size={dieSize}
-            className={isPressing ? styles.jitter : undefined}
+            className={isPressing ? styles.jitter : reducedMotion ? undefined : styles.glow}
           />
         ))}
       </div>

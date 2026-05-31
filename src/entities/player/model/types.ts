@@ -16,6 +16,6 @@ export interface Player {
 export const LOCAL_PLAYER_ID = 'local'
 
 /** Локальный игрок по умолчанию (до появления мультиплеера). */
-export function createLocalPlayer(name = 'You'): Player {
+export function createLocalPlayer(name = 'Avatar Name'): Player {
   return { id: LOCAL_PLAYER_ID, name }
 }

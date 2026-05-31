@@ -1,0 +1,126 @@
+/**
+ * palettes.css — ось «цвет» (data-theme-colors).
+ *
+ * Переопределяет ТОЛЬКО акцентные токены поверх стиля из base.css (подключается
+ * после него), поэтому форма/тени/свечение остаются от выбранного стиля, а любой
+ * стиль свободно сочетается с любой палитрой.
+ *
+ * Каждая палитра задаёт акцент и выбирает «характер» свечения сцены через токен
+ * --stage-pulse (и опц. --stage-drift) — сами keyframes живут в animations.css.
+ *
+ * Палитры перечислены ПО АЛФАВИТУ (как в меню/COLORS): arcane, charm, crimson,
+ * darkness, ember, frost, nature, necrotic, radiant, storm.
+ */
+
+:root[data-theme-colors='arcane'] {
+  --accent: #a855f7;
+  --accent-hover: #9333ea;
+  --accent-contrast: #f5f3ff;
+  --accent-secondary: #38bdf8;
+  /* Эмоция магии: мистическое переливание цвета фиолетовый↔голубой. */
+  --stage-pulse: glow-arcane 6s ease-in-out infinite;
+}
+
+:root[data-theme-colors='charm'] {
+  --accent: #ec4899;
+  --accent-hover: #db2777;
+  --accent-contrast: #2a0716;
+  --accent-secondary: #fb7185;
+  /* Эмоция любви: нежное «сердечное» дыхание с тёплым переливанием розовый↔коралл. */
+  --stage-pulse: glow-charm 5.5s ease-in-out infinite;
+}
+
+:root[data-theme-colors='crimson'] {
+  --accent: #dc2626;
+  --accent-hover: #b91c1c;
+  --accent-contrast: #1a0303;
+  --accent-secondary: #f87171;
+  /* Эмоция крови: тяжёлое медленное колыхание (тот же камин, но мрачнее). */
+  --stage-pulse: glow-fire 4.4s ease-in-out infinite;
+  /* Микро-дрейф: то же дрожание жара, но медленнее и тяжелее. */
+  --stage-drift: drift-fire 8.5s ease-in-out infinite;
+}
+
+/* Darkness — особая монохромная палитра, зависящая от стиля.
+ * На flat акцент почти-чёрный: ореол и свечение (выведены из --accent через
+ * color-mix) превращаются в стильное тёмное свечение на светлом фоне.
+ * На neon тёмное свечение было бы не видно, поэтому ниже комбинированный
+ * селектор переопределяет акцент на светло-белый — свечение становится белым. */
+:root[data-theme-colors='darkness'] {
+  --accent: #1c1f26;
+  --accent-hover: #2a2f3a;
+  --accent-contrast: #f4f5f7;
+  --accent-secondary: #6b7280;
+  /* Эмоция тьмы: очень медленное спокойное «дыхание». */
+  --stage-pulse: glow-steady 6.5s ease-in-out infinite;
+}
+
+:root[data-theme-shapes='neon'][data-theme-colors='darkness'] {
+  --accent: #e6f1ff;
+  --accent-hover: #ffffff;
+  --accent-contrast: #04141a;
+  --accent-secondary: #7f8fb3;
+}
+
+:root[data-theme-colors='ember'] {
+  --accent: #f97316;
+  --accent-hover: #ea580c;
+  --accent-contrast: #1a0e02;
+  --accent-secondary: #f43f5e;
+  /* Эмоция огня: мягкое колыхание камина (плавно, без резких вспышек). */
+  --stage-pulse: glow-fire 3.6s ease-in-out infinite;
+  /* Микро-дрейф: лёгкое «дрожание жара» — восходящий горячий воздух. */
+  --stage-drift: drift-fire 7s ease-in-out infinite;
+}
+
+:root[data-theme-colors='frost'] {
+  --accent: #38bdf8;
+  --accent-hover: #0ea5e9;
+  --accent-contrast: #04293a;
+  --accent-secondary: #a5f3fc;
+  /* Эмоция холода: медленное тягучее переливание. */
+  --stage-pulse: glow-frost 7s ease-in-out infinite;
+  /* Микро-дрейф: медленный тягучий дрейф вбок, словно иней. */
+  --stage-drift: drift-frost 13s ease-in-out infinite;
+}
+
+:root[data-theme-colors='nature'] {
+  --accent: #22c55e;
+  --accent-hover: #16a34a;
+  --accent-contrast: #04140a;
+  --accent-secondary: #eab308;
+  /* Эмоция природы: сезонный сдвиг цвета лето→осень (зелёный→золото). */
+  --stage-pulse: glow-nature 10s ease-in-out infinite;
+}
+
+:root[data-theme-colors='necrotic'] {
+  --accent: #5e8d72;
+  --accent-hover: #4e7660;
+  --accent-contrast: #f0fdf4;
+  /* Вторичный — тёмно-фиолетовый: имя и линия шапки переливаются призрачно-зелёный
+   * ↔ тёмно-фиолетовый, как и свечение сцены (glow-necrotic). */
+  --accent-secondary: #7e22ce;
+  /* Эмоция некротики: медленное зловещее перетекание призрачно-зелёный↔тёмно-фиолетовый. */
+  --stage-pulse: glow-necrotic 9s ease-in-out infinite;
+}
+
+:root[data-theme-colors='radiant'] {
+  --accent: #ffe27a;
+  --accent-hover: #ffd24d;
+  --accent-contrast: #2a2200;
+  --accent-secondary: #fffbe6;
+  /* Эмоция divine-света: восход — ровное излучение с ареолом вверх и в стороны. */
+  --stage-pulse: glow-radiant 6s ease-in-out infinite;
+}
+
+:root[data-theme-colors='storm'] {
+  --accent: #facc15;
+  --accent-hover: #eab308;
+  --accent-contrast: #1a1500;
+  --accent-secondary: #bae6fd;
+  /* Эмоция молнии: долгое затишье с редкими затяжными разрядами и заревом вверх. */
+  --stage-pulse: glow-storm 14s linear infinite;
+  /* Микро-дрейф: затишье, затем дрожь сцены в момент вспышки. Та же длительность
+   * и timing (14s linear), что у glow-storm — обе анимации держат общую фазу. */
+  --stage-drift: drift-storm 14s linear infinite;
+}

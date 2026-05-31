@@ -58,7 +58,16 @@ export function RollScreen() {
   return (
     <div className={styles.screen}>
       <header className={styles.topBar}>
-        <span className={styles.player}>{player.name}</span>
+        <span className={styles.player}>
+          {/* Руна-маркер: окрашена акцентом палитры и светится тем же ореолом,
+           * что и кубик, — связывает шапку с темой и главным объектом сцены.
+           * «Дышит» в такт сцене; при reduced-motion дыхание гасим. */}
+          <span
+            className={`${styles.rune} ${reducedMotion ? styles.runeStill : ''}`}
+            aria-hidden="true"
+          />
+          <span className={styles.playerName}>{player.name}</span>
+        </span>
         <IconButton label="Настройки" onClick={() => setSettingsOpen(true)}>
           ⚙
         </IconButton>

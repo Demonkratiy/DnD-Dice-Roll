@@ -1,0 +1,284 @@
+/**
+ * animations.css — keyframes тем: «характер» свечения сцены, дыхание кубика, дрейф.
+ *
+ * Палитры (palettes.css) выбирают архетип через токены --stage-pulse / --stage-drift,
+ * а стиль (base.css) — дыхание кубика через --die-pulse. Сами keyframes собраны
+ * здесь. Они ГЛОБАЛЬНЫ (этот файл — не CSS-модуль), поэтому доступны хешированным
+ * классам сцены/кубика. Анимации гасятся при prefers-reduced-motion и опции
+ * «отключить анимации».
+ *
+ * Каждый glow-* анимирует box-shadow трея: меняет радиус размытия и долю акцента,
+ * масштабируя базовую силу --stage-glow (поэтому неон ярче автоматически).
+ */
+
+/* Пульс неонового свечения кубика на сцене (только неон). Дышит синхронно по
+ * фазе с ambient-свечением сцены — общий ритм атмосферы. Цвет — из --accent. */
+@keyframes die-glow-pulse {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 7px color-mix(in srgb, var(--accent) 65%, transparent));
+  }
+  50% {
+    filter: drop-shadow(0 0 15px color-mix(in srgb, var(--accent) 92%, transparent));
+  }
+}
+
+/* То же дыхание свечения кубика для светлой темы — мягче по альфе, чтобы цветной
+ * ореол не спорил со светлым фоном, но был так же живым, как в неоне. */
+@keyframes die-glow-pulse-soft {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 5px color-mix(in srgb, var(--accent) 35%, transparent));
+  }
+  50% {
+    filter: drop-shadow(0 0 11px color-mix(in srgb, var(--accent) 60%, transparent));
+  }
+}
+
+/* Дыхание руны-маркера в шапке — тот же ритм, что у кубика, но скромнее по
+ * радиусу: верх экрана «оживает» в такт сцене, не перетягивая внимание. */
+@keyframes rune-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 6px var(--die-halo), 0 0 10px var(--die-halo);
+  }
+  50% {
+    box-shadow: 0 0 10px var(--die-halo), 0 0 18px var(--die-halo);
+  }
+}
+
+/* Огонь (ember, crimson): мягкое колыхание камина — плавно, без резких вспышек.
+ * Помимо радиуса «дышит» и оттенок: на пике жара цвет уходит к --accent-secondary
+ * (угли разгораются), на спаде возвращается к базовому --accent. Цвета берутся из
+ * токенов, поэтому ember (оранжевый↔розово-красный) и crimson (красный↔светлее)
+ * получают разный характер от одной анимации. */
+@keyframes glow-fire {
+  0%,
+  100% {
+    box-shadow: var(--shadow),
+      0 0 46px color-mix(in srgb, var(--accent) calc(var(--stage-glow) * 0.9), transparent);
+  }
+  35% {
+    box-shadow: var(--shadow),
+      0 0 64px color-mix(in srgb,
+        color-mix(in srgb, var(--accent) 45%, var(--accent-secondary)) calc(var(--stage-glow) * 1.35),
+        transparent);
+  }
+  70% {
+    box-shadow: var(--shadow),
+      0 0 54px color-mix(in srgb,
+        color-mix(in srgb, var(--accent) 75%, var(--accent-secondary)) calc(var(--stage-glow) * 1.08),
+        transparent);
+  }
+}
+
+/* Спокойствие (darkness): ровное «дыхание». */
+@keyframes glow-steady {
+  0%,
+  100% {
+    box-shadow: var(--shadow),
+      0 0 48px color-mix(in srgb, var(--accent) calc(var(--stage-glow) * 0.95), transparent);
+  }
+  50% {
+    box-shadow: var(--shadow),
+      0 0 62px color-mix(in srgb, var(--accent) calc(var(--stage-glow) * 1.25), transparent);
+  }
+}
+
+/* Природа (nature): сезонный сдвиг цвета лето→осень→лето.
+ * Свечение плавно переходит из летнего зелёного в осеннее золото и обратно,
+ * заодно мягко дыша по радиусу. Цвета заданы явно (а не из --accent), потому
+ * что это смысл темы — переход палитры природы по сезонам. */
+@keyframes glow-nature {
+  0%,
+  100% {
+    box-shadow: var(--shadow),
+      0 0 50px color-mix(in srgb, #22c55e calc(var(--stage-glow) * 1), transparent);
+  }
+  30% {
+    box-shadow: var(--shadow),
+      0 0 60px color-mix(in srgb, #84cc16 calc(var(--stage-glow) * 1.2), transparent);
+  }
+  55% {
+    box-shadow: var(--shadow),
+      0 0 64px color-mix(in srgb, #eab308 calc(var(--stage-glow) * 1.3), transparent);
+  }
+  72% {
+    box-shadow: var(--shadow),
+      0 0 58px color-mix(in srgb, #d97706 calc(var(--stage-glow) * 1.15), transparent);
+  }
+}
+
+/* Молния (storm): долгое затишье, редкий короткий эпизод грозы.
+ * Почти весь цикл (14s) — спокойный фон. Гроза «случается» лишь один раз в
+ * узком окне ~6–13% таймлайна: быстрый фронт → затяжное зарево → затухание,
+ * с коротким вторичным разрядом. Во время вспышки добавляется направленный
+ * вверх «отсвет» (вторая тень со смещением по -Y и большим радиусом). */
+@keyframes glow-storm {
+  /* спокойный фон — большую часть времени */
+  0%,
+  5%,
+  16%,
+  100% {
+    background: var(--surface);
+    box-shadow: var(--shadow),
+      0 0 42px color-mix(in srgb, var(--accent) calc(var(--stage-glow) * 0.55), transparent);
+  }
+  /* первый разряд: быстрый фронт + яркая бело-голубая зарница заливает сцену */
+  7% {
+    background: color-mix(in srgb, var(--accent-secondary) 32%, var(--surface));
+    box-shadow: var(--shadow),
+      0 0 120px color-mix(in srgb, var(--accent) calc(var(--stage-glow) * 2.6), transparent),
+      0 -100px 160px color-mix(in srgb, var(--accent) calc(var(--stage-glow) * 2.1), transparent);
+  }
+  /* затяжное яркое зарево — зарница быстро спадает */
+  9% {
+    background: color-mix(in srgb, var(--accent-secondary) 14%, var(--surface));
+    box-shadow: var(--shadow),
+      0 0 100px color-mix(in srgb, var(--accent) calc(var(--stage-glow) * 2.1), transparent),
+      0 -82px 140px color-mix(in srgb, var(--accent) calc(var(--stage-glow) * 1.6), transparent);
+  }
+  /* короткий вторичный разряд — слабая повторная зарница */
+  12% {
+    background: color-mix(in srgb, var(--accent-secondary) 18%, var(--surface));
+    box-shadow: var(--shadow),
+      0 0 88px color-mix(in srgb, var(--accent) calc(var(--stage-glow) * 1.8), transparent),
+      0 -64px 120px color-mix(in srgb, var(--accent) calc(var(--stage-glow) * 1.3), transparent);
+  }
+}
+
+/* ===========================================================================
+ * Микро-дрейф сцены (--stage-drift) — едва заметное «дыхание движения».
+ *
+ * Живёт на отдельных свойствах translate/rotate (НЕ transform), поэтому не
+ * конфликтует со встряской при зажатии (tray-shake, она на transform).
+ * Амплитуда крошечная (~4px, доли градуса) — подсознательная живость, не «плавание».
+ * Гасится вместе с прочими анимациями (.still / prefers-reduced-motion / .shaking).
+ * ======================================================================== */
+
+/* Огонь (ember, crimson): лёгкое восходящее дрожание горячего воздуха. */
+@keyframes drift-fire {
+  0%,
+  100% {
+    translate: 0 0;
+    rotate: -0.3deg;
+  }
+  50% {
+    translate: 0 -4px;
+    rotate: 0.3deg;
+  }
+}
+
+/* Холод (frost): медленный тягучий дрейф вбок. */
+@keyframes drift-frost {
+  0%,
+  100% {
+    translate: -4px 0;
+  }
+  50% {
+    translate: 4px 1px;
+  }
+}
+
+/* Молния (storm): затишье, затем короткая дрожь в окне вспышки (7–12%).
+ * Синхронно с glow-storm (14s linear) — дрожь совпадает со всплеском света. */
+@keyframes drift-storm {
+  0%,
+  6%,
+  14%,
+  100% {
+    translate: 0 0;
+    rotate: 0deg;
+  }
+  7% {
+    translate: 3px -4px;
+    rotate: 0.6deg;
+  }
+  9% {
+    translate: -3px -2px;
+    rotate: -0.5deg;
+  }
+  11% {
+    translate: 2px -3px;
+    rotate: 0.4deg;
+  }
+  12.5% {
+    translate: 0 0;
+    rotate: 0deg;
+  }
+}
+
+/* Свет (radiant): восход — направленное вверх и в стороны зарево.
+ * Помимо ровного «дыхания» добавлены направленные тени: вверх (-Y) и вбок
+ * (±X) с большим радиусом, создающие ареол восходящего солнца. Divine-силы. */
+@keyframes glow-radiant {
+  0%,
+  100% {
+    box-shadow: var(--shadow),
+      0 0 52px color-mix(in srgb, var(--accent) calc(var(--stage-glow) * 1), transparent),
+      0 -60px 90px color-mix(in srgb, var(--accent) calc(var(--stage-glow) * 0.9), transparent),
+      -70px -20px 80px color-mix(in srgb, var(--accent) calc(var(--stage-glow) * 0.7), transparent),
+      70px -20px 80px color-mix(in srgb, var(--accent) calc(var(--stage-glow) * 0.7), transparent);
+  }
+  50% {
+    box-shadow: var(--shadow),
+      0 0 66px color-mix(in srgb, var(--accent) calc(var(--stage-glow) * 1.3), transparent),
+      0 -88px 120px color-mix(in srgb, var(--accent) calc(var(--stage-glow) * 1.25), transparent),
+      -96px -28px 110px color-mix(in srgb, var(--accent) calc(var(--stage-glow) * 1), transparent),
+      96px -28px 110px color-mix(in srgb, var(--accent) calc(var(--stage-glow) * 1), transparent);
+  }
+}
+
+/* Магия (arcane): мистическое переливание цвета фиолетовый↔голубой.
+ * Цвета заданы явно — смысл темы в смене оттенка магической энергии. */
+@keyframes glow-arcane {
+  0%,
+  100% {
+    box-shadow: var(--shadow),
+      0 0 50px color-mix(in srgb, #a855f7 calc(var(--stage-glow) * 1), transparent);
+  }
+  50% {
+    box-shadow: var(--shadow),
+      0 0 70px color-mix(in srgb, #38bdf8 calc(var(--stage-glow) * 1.4), transparent);
+  }
+}
+
+/* Некротика (necrotic): медленное зловещее перетекание цвета.
+ * Кислотно-зелёный ↔ тёмно-фиолетовый — узнаваемая палитра некротической магии
+ * D&D. Плавный ease-in-out цикл, без резких скачков: жутко, но спокойно для глаз.
+ * Цвета заданы явно — смысл темы в смене оттенка гнили/распада. */
+@keyframes glow-necrotic {
+  0%,
+  100% {
+    box-shadow: var(--shadow),
+      0 0 50px color-mix(in srgb, #65a30d calc(var(--stage-glow) * 1), transparent);
+  }
+  35% {
+    box-shadow: var(--shadow),
+      0 0 64px color-mix(in srgb, #a3e635 calc(var(--stage-glow) * 1.3), transparent);
+  }
+  65% {
+    box-shadow: var(--shadow),
+      0 0 60px color-mix(in srgb, #7e22ce calc(var(--stage-glow) * 1.25), transparent);
+  }
+  82% {
+    box-shadow: var(--shadow),
+      0 0 54px color-mix(in srgb, #581c87 calc(var(--stage-glow) * 1.1), transparent);
+  }
+}
+
+/* Очарование (charm): нежное «сердечное» дыхание — любовное тепло.
+ * Розовый плавно переливается в тёплый коралл и обратно, мягко дыша по радиусу.
+ * Спокойный ease-in-out, без резких скачков — ласково, а не нервно. Цвета явные,
+ * смысл темы — тёплая смена оттенка розовый↔коралл. */
+@keyframes glow-charm {
+  0%,
+  100% {
+    box-shadow: var(--shadow),
+      0 0 50px color-mix(in srgb, #ec4899 calc(var(--stage-glow) * 1), transparent);
+  }
+  50% {
+    box-shadow: var(--shadow),
+      0 0 66px color-mix(in srgb, #fb7185 calc(var(--stage-glow) * 1.35), transparent);
+  }
+}

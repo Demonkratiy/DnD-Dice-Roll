@@ -12,12 +12,60 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding-bottom: 0.75rem;
+  /* Градиентная линия под шапкой: акцент палитры тает к краям. Связывает верх
+   * экрана с темой, давая ей «раму» сверху. border-image рисует градиент. */
+  border-bottom: 1px solid transparent;
+  border-image: linear-gradient(
+      90deg,
+      transparent,
+      var(--accent) 20%,
+      var(--accent-secondary, var(--accent)) 80%,
+      transparent
+    )
+    1;
 }
 
 .player {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
   font-size: 1.1rem;
   font-weight: 700;
+}
+
+/* Руна-маркер слева от имени: ромб, окрашенный акцентом палитры, со свечением
+ * того же ореола, что и кубик (--die-halo). Мгновенно реагирует на смену темы.
+ * «Дышит» в такт сцене (rune-pulse); гасится при reduced-motion (.runeStill). */
+.rune {
+  width: 0.7rem;
+  height: 0.7rem;
+  flex: none;
+  rotate: 45deg;
+  border-radius: 2px;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--die-halo), 0 0 14px var(--die-halo);
+  animation: rune-pulse 3.2s ease-in-out infinite;
+}
+
+.runeStill {
+  animation: none;
+}
+
+/* Имя — заливка акцентным градиентом палитры (accent → secondary) через
+ * background-clip: text. Конец градиента подмешан к --text, чтобы почти-белые
+ * вторичные цвета (radiant/frost) не сливались со светлым фоном: на flat --text
+ * тёмный — стоп темнеет, на neon светлый — остаётся ярким. Фолбэк-цвет --text. */
+.playerName {
   color: var(--text);
+  background: linear-gradient(
+    100deg,
+    var(--accent),
+    color-mix(in srgb, var(--accent-secondary, var(--accent)) 65%, var(--text))
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .main {
@@ -27,4 +75,12 @@
   align-items: center;
   justify-content: center;
   gap: 1.75rem;
+}
+
+/* Системная настройка «меньше движения» — глушим дыхание руны. Опция приложения
+ * «отключить анимации» обрабатывается классом .runeStill из RollScreen.tsx. */
+@media (prefers-reduced-motion: reduce) {
+  .rune {
+    animation: none;
+  }
 }

@@ -12,7 +12,7 @@ function makeResult(id: string): RollResult {
   return {
     id,
     request: { die: 'd20', count: 1, modifier: 0, mode: 'normal' },
-    author: { id: 'local', name: 'You' },
+    author: { id: 'local', name: 'Avatar Name' },
     timestamp: Number(id),
     dice: [{ die: 'd20', value: 12 }],
     dropped: [],

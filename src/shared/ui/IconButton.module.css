@@ -7,8 +7,12 @@
   font-size: 1.2rem;
   border-radius: 50%;
   border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--text);
+  /* Фон кружка — лёгкая акцентная заливка (подтон палитры), чтобы
+   * контрол жил в теме, но иконка оставалась читаемой. */
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+  /* Иконка окрашена акцентом палитры — как и глифы степпера; на neon
+   * совпадает с контуром кубика, на светлой теме даёт явный цвет. */
+  color: var(--accent);
   cursor: pointer;
   transition:
     background 0.15s ease,
@@ -17,7 +21,7 @@
 
 .iconButton:hover {
   background: var(--accent);
-  color: var(--accent-contrast);
+  color: var(--control-on-accent);
 }
 
 .iconButton:focus-visible {

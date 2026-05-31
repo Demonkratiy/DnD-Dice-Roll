@@ -64,7 +64,7 @@ src/
     ui/        ui-kit: Button, IconButton, Stepper, Segmented, Drawer, Switch
     lib/       утилиты и хуки: rng, usePressAndShake, useRollAnimation, useReducedMotion
     services/  RollSource (+ LocalRollSource, TODO RemoteRollSource), audio
-    theme/     tokens.css, shape/ (shapes + ShapeProvider), color/ (colors + ColorProvider)
+    theme/     css/ (base + palettes + animations), shape/ (shapes + ShapeProvider), color/ (colors + ColorProvider)
     config/    константы (набор кубиков, дефолты)
 ```
 

@@ -8,8 +8,8 @@
 Тема — это набор **семантических CSS-переменных** (токенов), применяемых через
 **две независимые оси** на `<html>`: атрибут `data-theme-shapes` задаёт **стиль**
 (форма/тени/свечение: `flat` / `neon`), атрибут `data-theme-colors` — **цветовую
-палитру** (`ember` / `frost` / `forest` / `arcane` / `crimson` / `storm` /
-`radiant` / `necrotic`). Компоненты и SVG-силуэты кубиков
+палитру** (`ember` / `frost` / `nature` / `arcane` / `crimson` / `storm` /
+`radiant` / `necrotic` / `darkness` / `charm`). Компоненты и SVG-силуэты кубиков
 используют **только** токены (`var(--accent)`, `var(--die-fill)` …), поэтому смена
 любой оси перекрашивает весь UI мгновенно, без ре-рендера React. Тонкие TS-обёртки
 (`ShapeProvider` + `SHAPES`, `ColorProvider` + `COLORS`) хранят выбор и рисуют
@@ -21,7 +21,7 @@
 flowchart LR
     Style["ShapeProvider<br/>useState + localStorage"] -->|"data-theme-shapes='flat'|'neon'"| HTML["&lt;html&gt;"]
     Color["ColorProvider<br/>useState + localStorage"] -->|"data-theme-colors='ember'|..."| HTML
-    HTML --> Tokens["tokens.css<br/>стиль задаёт форму,<br/>палитра — цветовые токены"]
+    HTML --> Tokens["css/base + palettes<br/>стиль задаёт форму,<br/>палитра — цветовые токены"]
     Tokens --> UI["компоненты + силуэты кубиков"]
     Shapes["shape/shapes.ts (реестр стилей)"] --> Settings["SettingsPanel<br/>переключатели"]
     Colors["color/colors.ts (реестр палитр)"] --> Settings
@@ -40,7 +40,9 @@ flowchart LR
   (`--die-glow`), скругления, контраст поверхностей, базовая светлота (`color-scheme`),
   а также базовые значения акцентных токенов.
 - **Ось «цвет»** (`data-theme-colors`): акцентная палитра — переопределяет только
-  `--accent`, `--accent-hover`, `--accent-contrast` и (задел) `--accent-secondary`.
+  `--accent`, `--accent-hover`, `--accent-contrast` и `--accent-secondary`
+  (вторичный акцент: используется в градиенте имени игрока, линии под шапкой и в
+  «перекрашивающихся» свечениях сцены).
 - **Кубик реагирует на цвет автоматически.** Токены `--die-fill-active`, `--die-halo`
   (и в неоне — `--die-stroke`, `--die-glow`) выводятся из `var(--accent)` через
   `color-mix` прямо в блоках стиля. CSS-переменные резолвятся лениво (в момент
@@ -53,7 +55,9 @@ flowchart LR
 
 | Файл | Роль |
 |------|------|
-| [tokens.css](../src/shared/theme/tokens.css) | Токены: блоки стиля (`:root[data-theme-shapes='...']`) и блоки палитр (`:root[data-theme-colors='...']`) |
+| [css/base.css](../src/shared/theme/css/base.css) | Ось «стиль» (`:root[data-theme-shapes='...']`) + базовые семантические токены |
+| [css/palettes.css](../src/shared/theme/css/palettes.css) | Ось «цвет» (`:root[data-theme-colors='...']`) — палитры по алфавиту, переопределяют акценты |
+| [css/animations.css](../src/shared/theme/css/animations.css) | Keyframes: свечение сцены (`glow-*`), дыхание кубика (`die-glow-pulse*`), дрейф (`drift-*`) |
 | [shape/shapes.ts](../src/shared/theme/shape/shapes.ts) | Реестр стилей: `ShapeId`, метаданные, превью, `DEFAULT_SHAPE_ID` |
 | [color/colors.ts](../src/shared/theme/color/colors.ts) | Реестр палитр: `ColorId`, метаданные, превью, `DEFAULT_COLOR_ID` |
 | [shape/ShapeProvider.tsx](../src/shared/theme/shape/ShapeProvider.tsx) | Хранит стиль, пишет `data-theme-shapes`, `localStorage` (`ddr.shape`), учитывает `prefers-color-scheme` |
@@ -67,20 +71,49 @@ flowchart LR
 `--text-muted`, `--border`, `--shadow`.
 Акцент (задаётся стилем, переопределяется палитрой): `--accent`, `--accent-hover`,
 `--accent-contrast`, `--accent-soft` (приглушённая заливка элементов),
-`--accent-secondary` (задел).
+`--accent-secondary` (вторичный акцент — градиент имени, линия под шапкой,
+перекрашивающиеся свечения), `--control-on-accent` (цвет глифа контролов −/+/⚙/перо
+на hover-заливке акцентом: на flat светлый «выворотка», на neon тёмный
+`--accent-contrast`).
 Результат: `--crit-success`, `--crit-fail`.
 Кубик: `--die-stroke`, `--die-stroke-width`, `--die-fill`, `--die-fill-active`,
-`--die-text`, `--die-glow`, `--die-halo`.
+`--die-text`, `--die-glow`, `--die-halo`, `--die-pulse` (дыхание свечения кубика
+на сцене: keyframes `die-glow-pulse` в неоне и мягче `die-glow-pulse-soft` на flat;
+гасится вместе с прочими анимациями). На flat контур `--die-stroke` — почти чёрный
+с подтоном акцента (`color-mix(... 45%, #14171d)`), чтобы силуэт был связан со свечением.
 Сцена: `--stage-glow` — сила базового свечения сцены броска (задаётся стилем:
 на тёмном неоне ярче, чем на светлом flat); `--stage-pulse` — «характер»
 пульсации свечения (задаётся **палитрой**: огонь мерцает, холод переливается,
 молния вспыхивает и т.д.; масштабирует `--stage-glow` через keyframes
-`glow-fire`/`glow-frost`/`glow-steady`/`glow-forest`/`glow-storm`/`glow-radiant`/`glow-arcane`/`glow-necrotic`).
-Часть архетипов (`glow-forest`, `glow-arcane`, `glow-necrotic`) ещё и **перекрашивают**
-свечение по ходу цикла — сезонный сдвиг зелёный→золото у forest, фиолетовый↔голубой
-у arcane, кислотно-зелёный↔тёмно-фиолетовый у necrotic.
+`glow-fire`/`glow-frost`/`glow-steady`/`glow-nature`/`glow-storm`/`glow-radiant`/`glow-arcane`/`glow-necrotic`/`glow-charm`).
+Часть архетипов (`glow-nature`, `glow-arcane`, `glow-necrotic`, `glow-charm`, а также `glow-fire`)
+ещё и **перекрашивают** свечение по ходу цикла — сезонный сдвиг зелёный→золото у nature,
+фиолетовый↔голубой у arcane, кислотно-зелёный↔тёмно-фиолетовый у necrotic, а у огня
+оттенок плавает к `--accent-secondary` на пике жара. `glow-storm` дополнительно
+кратко заливает `background` трея бело-голубой зарницей в момент разряда.
+`--stage-drift` — второй, независимый слой эмоции: едва заметный микро-дрейф сцены
+(keyframes `drift-fire`/`drift-frost`/`drift-storm`), живёт на свойствах
+`translate`/`rotate` (НЕ `transform`), поэтому не конфликтует со встряской при
+зажатии и складывается с ней. У storm дрейф синхронизирован с `glow-storm`
+(одинаковые 14s linear) — дрожь сцены совпадает со вспышкой. Гасится вместе
+с `--stage-pulse` (`.still` / `prefers-reduced-motion` / `.shaking`).
 
 **Правило:** компоненты не используют «сырые» цвета — только токены отсюда.
+
+### Тематизация шапки и контролов
+
+Чтобы тема ощущалась во всём UI, а не только на сцене:
+
+- **Шапка** ([RollScreen](../src/app/ui/RollScreen.tsx)): имя игрока залито
+  градиентом `--accent → --accent-secondary` (через `background-clip: text`; конец
+  градиента подмешан к `--text`, чтобы почти-белые вторичные цвета не сливались на
+  светлой теме). Слева — руна-ромб цвета `--accent` со свечением `--die-halo`,
+  «дышащая» в такт сцене (`rune-pulse`, гасится при reduced-motion). Под шапкой —
+  градиентная линия `--accent → --accent-secondary` (`border-image`).
+- **Контролы** (`Stepper`, `IconButton`, `Drawer`-хэндл): глифы −/+, ⚙ и перо
+  окрашены в `--accent`; кружки ⚙/пера имеют лёгкую акцентную подложку
+  (`color-mix(--accent 12%, --surface)`). На hover — заливка `--accent`, глиф
+  `--control-on-accent`. Поведение единое во всех контролах.
 
 ## Куда движемся (Этап 2)
 
@@ -100,7 +133,7 @@ flowchart LR
 
 ## Как добавить новый стиль (ось «форма»)
 
-1. В [tokens.css](../src/shared/theme/tokens.css) добавь блок
+1. В [css/base.css](../src/shared/theme/css/base.css) добавь блок
    `:root[data-theme-shapes='<id>'] { ... }` со всеми токенами.
 2. В [shape/shapes.ts](../src/shared/theme/shape/shapes.ts) расширь `ShapeId` и массив `SHAPES`
    (имя + превью + `scheme`).
@@ -115,13 +148,14 @@ flowchart LR
 |---------|-----------|--------------|
 | `ember` | Fire / Огонь | оранжево-красный |
 | `frost` | Cold / Лёд | ледяной голубой |
-| `forest` | Nature·Poison / Природа | зелёный |
+| `nature` | Nature·Poison / Природа | зелёный |
 | `arcane` | Force·Arcane / Магия | фиолетовый |
 | `crimson` | Blood / Кровь | алый |
 | `storm` | Lightning·Air / Молния | электрический жёлтый |
-| `radiant` | Radiant / Свет | металлическое золото |
-| `necrotic` | Necrotic / Некротика | кислотно-тёмно-зелёный (нежить) |
+| `radiant` | Radiant / Свет | divine-золото (чистый свет) |
+| `necrotic` | Necrotic / Некротика | призрачно-зелёный → тёмно-фиолетовый (нежить) |
 | `darkness` | Shadow / Тьма | монохром: тёмное свечение на flat, белое на neon |
+| `charm` | Charm·Enchantment / Очарование | розовый (любовные чары) |
 
 > **Зависимость от стиля (исключение).** Обычно палитра задаёт один `--accent`
 > и не зависит от оси «форма». Палитра `darkness` — осознанное исключение: на flat
@@ -131,10 +165,11 @@ flowchart LR
 > акцент на светло-белый. Каскад решает за счёт большей специфичности, остальные
 > палитры остаются стиле-независимыми.
 
-1. В [tokens.css](../src/shared/theme/tokens.css) добавь блок
+1. В [css/palettes.css](../src/shared/theme/css/palettes.css) добавь блок
    `:root[data-theme-colors='<id>'] { ... }` только с акцентными токенами
    (`--accent`, `--accent-hover`, `--accent-contrast`, `--accent-secondary`).
    Цвет кубика (заливка/ореол/свечение) подхватится автоматически — он
-   выведён из `var(--accent)` в блоках стиля.
+   выведён из `var(--accent)` в блоках стиля. Ключевые кадры свечения —
+   в [css/animations.css](../src/shared/theme/css/animations.css).
 2. В [color/colors.ts](../src/shared/theme/color/colors.ts) расширь `ColorId` и массив `COLORS`.
 3. Переключатель «Цвет» в настройках подхватит палитру автоматически.

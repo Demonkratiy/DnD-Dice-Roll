@@ -24,14 +24,16 @@
   border-radius: 10px;
   border: 1px solid var(--border);
   background: var(--surface);
-  color: var(--text);
+  /* Глифы −/+ окрашены акцентом палитры (на neon это совпадает с контуром
+   * кубика): контролы реагируют на тему и на светлой теме тоже. */
+  color: var(--accent);
   cursor: pointer;
   transition: background 0.15s ease;
 }
 
 .button:hover:not(:disabled) {
   background: var(--accent);
-  color: var(--accent-contrast);
+  color: var(--control-on-accent);
 }
 
 .button:focus-visible {

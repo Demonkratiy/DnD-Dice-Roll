@@ -21,12 +21,16 @@
   background: var(--surface);
   border: 1px solid var(--border);
   /* Базовое мягкое свечение акцентом + обычная тень.
-   * Сила свечения (--stage-glow) задаётся стилем: на тёмном неоне ярче. */
+   * Сила свечения (--stage-glow) задаётся стилем: на тёмном неоне ярче.
+   * Базовый радиус — --stage-shadow-radius (связан с радиусом в .shaking). */
   box-shadow: var(--shadow),
-    0 0 48px color-mix(in srgb, var(--accent) var(--stage-glow, 16%), transparent);
+    0 0 var(--stage-shadow-radius) color-mix(in srgb, var(--accent) var(--stage-glow, 16%), transparent);
   /* «Эмоция» палитры: характер пульсации свечения задаёт токен --stage-pulse
-   * (огонь мерцает, холод переливается, молния вспыхивает и т.д.). */
-  animation: var(--stage-pulse, none);
+   * (огонь мерцает, холод переливается, молния вспыхивает и т.д.).
+   * Второй слой --stage-drift — едва заметный дрейф (translate/rotate), не
+   * конфликтует со встряской: shake живёт на transform, дрейф — на translate/rotate.
+   * При зажатии .shaking переопределяет animation целиком и глушит оба слоя. */
+  animation: var(--stage-pulse, none), var(--stage-drift, none);
   cursor: pointer;
   user-select: none;
   touch-action: none; /* чтобы зажатие не скроллило страницу */
@@ -50,13 +54,19 @@
   /* Свечение усиливается с интенсивностью зажатия (--shake 0..1). */
   border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
   box-shadow: var(--shadow),
-    0 0 calc(48px + var(--shake, 0) * 56px)
+    0 0 calc(var(--stage-shadow-radius) + var(--shake, 0) * 56px)
       color-mix(in srgb, var(--accent) calc(30% + var(--shake, 0) * 45%), transparent);
 }
 
 /* Каждый кубик дрожит чуть по-своему. */
 .jitter {
   animation: die-jitter 0.16s ease-in-out infinite alternate;
+}
+
+/* Неоновое свечение кубика «дышит» в такт сцене (токен --die-pulse задан
+ * только в неоне; на flat — none). При зажатии вместо этого идёт jitter. */
+.glow {
+  animation: var(--die-pulse, none);
 }
 
 .tray .jitter:nth-child(2n) {
@@ -122,7 +132,8 @@
 @media (prefers-reduced-motion: reduce) {
   .tray,
   .shaking,
-  .jitter {
+  .jitter,
+  .glow {
     animation: none;
   }
 }

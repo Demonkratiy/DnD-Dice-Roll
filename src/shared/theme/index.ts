@@ -1,4 +1,10 @@
-import './tokens.css'
+// Токены тем разбиты на три слоя; порядок важен — каскад «стиль → палитра»:
+//  base       — ось «стиль» (flat/neon) + базовые семантические токены;
+//  palettes   — ось «цвет» (data-theme-colors), переопределяет акценты;
+//  animations — keyframes (свечение сцены, дыхание кубика, дрейф).
+import './css/base.css'
+import './css/palettes.css'
+import './css/animations.css'
 
 // Ось «форма» (стиль: flat/neon)
 export {
