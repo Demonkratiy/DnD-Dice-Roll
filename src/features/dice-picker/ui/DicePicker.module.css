@@ -1,0 +1,50 @@
+.picker {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.5rem;
+  width: 100%;
+  overflow-x: auto;
+  padding: 0.5rem 0.25rem;
+  justify-content: center;
+  scrollbar-width: thin;
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  flex: none;
+  width: 4.25rem;
+  padding: 0.5rem 0.25rem;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.item:hover {
+  background: var(--surface);
+  color: var(--text);
+}
+
+.item:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.selectedItem {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+.caption {
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}

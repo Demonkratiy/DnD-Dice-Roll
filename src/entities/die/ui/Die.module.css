@@ -1,0 +1,86 @@
+/* Силуэт кубика. Цвета — из токенов темы (var(--die-*)). */
+
+.die {
+  display: block;
+  overflow: visible;
+  filter: var(--die-glow);
+  transition: transform 0.18s ease;
+}
+
+.shape {
+  fill: var(--die-fill);
+  stroke: var(--die-stroke);
+  stroke-width: var(--die-stroke-width);
+}
+
+.value {
+  fill: var(--die-text);
+  font-size: 34px;
+  font-weight: 700;
+  text-anchor: middle;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Выбранный кубик в ленте: ореол и лёгкое увеличение. */
+.selected {
+  transform: scale(1.12);
+}
+
+.selected .shape {
+  fill: var(--die-fill-active);
+  filter: drop-shadow(0 0 10px var(--die-halo));
+}
+
+/* Состояние перебора форм — лёгкое размытие для динамики. */
+.scramble .shape {
+  opacity: 0.92;
+}
+
+.scramble .value {
+  opacity: 0.85;
+}
+
+/* Показ результата — короткий «пульс». */
+.reveal {
+  animation: die-pop 0.28s ease;
+}
+
+.critSuccess .value {
+  fill: var(--crit-success);
+}
+
+.critSuccess .shape {
+  stroke: var(--crit-success);
+  filter: drop-shadow(0 0 12px var(--crit-success));
+}
+
+.critFail .value {
+  fill: var(--crit-fail);
+}
+
+.critFail .shape {
+  stroke: var(--crit-fail);
+  filter: drop-shadow(0 0 12px var(--crit-fail));
+}
+
+@keyframes die-pop {
+  0% {
+    transform: scale(0.86);
+  }
+  60% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .die {
+    transition: none;
+  }
+
+  .reveal {
+    animation: none;
+  }
+}

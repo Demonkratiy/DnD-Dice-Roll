@@ -1,0 +1,110 @@
+/* Сцена броска. */
+
+.stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  width: 100%;
+}
+
+.tray {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  min-height: 180px;
+  width: 100%;
+  padding: 1.5rem;
+  border-radius: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  user-select: none;
+  touch-action: none; /* чтобы зажатие не скроллило страницу */
+  transition: box-shadow 0.2s ease;
+}
+
+.tray:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* Подрагивание всей сцены при зажатии (амплитуда — от --shake 0..1). */
+.shaking {
+  animation: tray-shake 0.12s linear infinite;
+}
+
+/* Каждый кубик дрожит чуть по-своему. */
+.jitter {
+  animation: die-jitter 0.16s ease-in-out infinite alternate;
+}
+
+.tray .jitter:nth-child(2n) {
+  animation-duration: 0.13s;
+}
+
+.tray .jitter:nth-child(3n) {
+  animation-duration: 0.19s;
+}
+
+.readout {
+  min-height: 3.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.total {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 2.75rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.breakdown {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.hint {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+
+@keyframes tray-shake {
+  0% {
+    transform: translate(calc(var(--shake, 0) * -2px), calc(var(--shake, 0) * 1px));
+  }
+  50% {
+    transform: translate(calc(var(--shake, 0) * 2px), calc(var(--shake, 0) * -1px));
+  }
+  100% {
+    transform: translate(calc(var(--shake, 0) * -1px), calc(var(--shake, 0) * 2px));
+  }
+}
+
+@keyframes die-jitter {
+  from {
+    transform: translateY(-2px) rotate(-3deg);
+  }
+  to {
+    transform: translateY(2px) rotate(3deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shaking,
+  .jitter {
+    animation: none;
+  }
+}

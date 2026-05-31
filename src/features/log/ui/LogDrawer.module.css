@@ -1,0 +1,74 @@
+.empty {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 1rem 0;
+}
+
+.clear {
+  align-self: flex-end;
+  margin-left: auto;
+  display: block;
+  font: inherit;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.3rem 0.7rem;
+  cursor: pointer;
+  margin-bottom: 0.75rem;
+}
+
+.clear:hover {
+  color: var(--text);
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-areas:
+    'notation dice total'
+    'meta meta total';
+  align-items: center;
+  gap: 0.15rem 0.75rem;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+}
+
+.notation {
+  grid-area: notation;
+  font-weight: 700;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.dice {
+  grid-area: dice;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.total {
+  grid-area: total;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.meta {
+  grid-area: meta;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}

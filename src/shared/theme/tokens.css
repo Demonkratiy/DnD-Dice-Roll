@@ -1,0 +1,69 @@
+/**
+ * tokens.css — семантические токены тем оформления.
+ *
+ * Каждая тема — это набор CSS-переменных, применяемых через атрибут
+ * `data-theme` на <html>. Компоненты и SVG-силуэты кубиков ссылаются ТОЛЬКО на
+ * эти семантические переменные (например, var(--die-stroke)), поэтому смена темы
+ * автоматически перекрашивает весь интерфейс, включая кубики, без ре-рендера React.
+ *
+ * Правило: компоненты не используют «сырые» цвета — только токены отсюда.
+ */
+
+:root,
+:root[data-theme='flat'] {
+  color-scheme: light;
+
+  /* Поверхности и текст */
+  --bg: #f4f5f7;
+  --surface: #ffffff;
+  --surface-elevated: #ffffff;
+  --text: #1c1f26;
+  --text-muted: #6b7280;
+  --border: #e2e5ea;
+  --shadow: 0 8px 24px rgba(20, 25, 40, 0.08);
+
+  /* Акцент */
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-contrast: #ffffff;
+
+  /* Семантика результата */
+  --crit-success: #16a34a;
+  --crit-fail: #dc2626;
+
+  /* Кубик (силуэт) */
+  --die-stroke: #1c1f26;
+  --die-stroke-width: 2.5;
+  --die-fill: #ffffff;
+  --die-fill-active: #eef0ff;
+  --die-text: #1c1f26;
+  --die-glow: none;
+  --die-halo: rgba(79, 70, 229, 0.18);
+}
+
+:root[data-theme='neon'] {
+  color-scheme: dark;
+
+  --bg: #0b0f1a;
+  --surface: #121826;
+  --surface-elevated: #1a2236;
+  --text: #e6f1ff;
+  --text-muted: #7f8fb3;
+  --border: #1f2a44;
+  --shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+
+  --accent: #22d3ee;
+  --accent-hover: #38e0f5;
+  --accent-contrast: #04141a;
+
+  --crit-success: #34d399;
+  --crit-fail: #fb7185;
+
+  --die-stroke: #22d3ee;
+  --die-stroke-width: 2.5;
+  --die-fill: #0d1422;
+  --die-fill-active: #102a33;
+  --die-text: #e6f1ff;
+  --die-glow: drop-shadow(0 0 6px rgba(34, 211, 238, 0.65));
+  --die-halo: rgba(34, 211, 238, 0.28);
+}

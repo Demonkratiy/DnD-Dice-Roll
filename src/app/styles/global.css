@@ -1,0 +1,62 @@
+/**
+ * global.css — глобальный сброс и базовые стили.
+ *
+ * Здесь живут только нейтральные базовые правила. Все визуальные значения,
+ * зависящие от темы (цвета, обводки, свечение), задаются через CSS-переменные
+ * в shared/theme/tokens.css (Фаза 3) и применяются через [data-theme] на <html>.
+ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  background-color: var(--bg);
+  color: var(--text);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+img,
+picture,
+svg,
+video {
+  display: block;
+  max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+/* Уважаем системную настройку «уменьшить движение» как глобальный предохранитель.
+   Точечная логика анимаций броска учитывает это отдельно (Фаза 4). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
