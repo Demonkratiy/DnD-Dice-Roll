@@ -7,3 +7,9 @@ export {
   type Settings,
   type SettingsContextValue,
 } from './settingsContext.ts'
+export { CharacterProvider } from './CharacterProvider.tsx'
+export {
+  useCharacter,
+  type Character,
+  type CharacterContextValue,
+} from './characterContext.ts'

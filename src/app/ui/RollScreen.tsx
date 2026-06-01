@@ -9,19 +9,24 @@ import { useMemo, useState } from 'react'
 import { IconButton } from '@shared/ui'
 import { createLocalRollSource } from '@shared/services'
 import { useReducedMotion } from '@shared/lib'
-import { createLocalPlayer } from '@entities/player'
+import { createLocalPlayer, ClassIcon } from '@entities/player'
 import type { DieType } from '@entities/die'
 import type { RollMode, RollRequest, RollResult } from '@entities/roll'
 import { Stage } from '@features/stage'
 import { DicePicker } from '@features/dice-picker'
 import { RollControls } from '@features/roll-controls'
 import { SettingsPanel } from '@features/settings'
+import { CharacterEditor } from '@features/character'
 import { LogDrawer } from '@features/log'
-import { useRollLog, useSettings } from '../providers'
+import { useRollLog, useSettings, useCharacter } from '../providers'
 import styles from './RollScreen.module.css'
 
 export function RollScreen() {
-  const player = useMemo(() => createLocalPlayer(), [])
+  const character = useCharacter()
+  const player = useMemo(
+    () => createLocalPlayer(character.name, character.classId),
+    [character.name, character.classId],
+  )
   const rollSource = useMemo(
     () => createLocalRollSource({ getAuthor: () => player }),
     [player],
@@ -38,6 +43,7 @@ export function RollScreen() {
   const [mode, setMode] = useState<RollMode>('normal')
 
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [characterOpen, setCharacterOpen] = useState(false)
   const [logOpen, setLogOpen] = useState(false)
 
   const request: RollRequest = useMemo(
@@ -58,16 +64,30 @@ export function RollScreen() {
   return (
     <div className={styles.screen}>
       <header className={styles.topBar}>
-        <span className={styles.player}>
-          {/* Руна-маркер: окрашена акцентом палитры и светится тем же ореолом,
-           * что и кубик, — связывает шапку с темой и главным объектом сцены.
-           * «Дышит» в такт сцене; при reduced-motion дыхание гасим. */}
-          <span
-            className={`${styles.rune} ${reducedMotion ? styles.runeStill : ''}`}
-            aria-hidden="true"
-          />
+        <button
+          type="button"
+          className={styles.player}
+          onClick={() => setCharacterOpen(true)}
+          aria-label="Редактировать героя"
+        >
+          {/* Маркер перед именем: если выбран класс — его иконка, иначе аморфная
+           * руна. Оба окрашены акцентом палитры и светятся тем же ореолом, что и
+           * кубик, — связывают шапку с темой и главным объектом сцены. «Дышат» в
+           * такт сцене; при reduced-motion дыхание гасим. */}
+          {player.classId ? (
+            <ClassIcon
+              classId={player.classId}
+              size={28}
+              className={`${styles.classIcon} ${reducedMotion ? styles.runeStill : ''}`}
+            />
+          ) : (
+            <span
+              className={`${styles.rune} ${reducedMotion ? styles.runeStill : ''}`}
+              aria-hidden="true"
+            />
+          )}
           <span className={styles.playerName}>{player.name}</span>
-        </span>
+        </button>
         <IconButton label="Настройки" onClick={() => setSettingsOpen(true)}>
           ⚙
         </IconButton>
@@ -99,6 +119,15 @@ export function RollScreen() {
         onShowLogsChange={settings.setShowLogs}
         disableAnimations={settings.disableAnimations}
         onDisableAnimationsChange={settings.setDisableAnimations}
+      />
+
+      <CharacterEditor
+        open={characterOpen}
+        onClose={() => setCharacterOpen(false)}
+        name={character.name}
+        onNameChange={character.setName}
+        classId={character.classId}
+        onClassChange={character.setClassId}
       />
 
       {settings.showLogs && (

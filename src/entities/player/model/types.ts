@@ -6,16 +6,20 @@
  * каждый бросок несёт информацию о том, кто его совершил.
  */
 
+import type { PlayerClassId } from './classes.ts'
+
 /** Игрок — автор броска. Структура сериализуема (готова к передаче по сети). */
 export interface Player {
   id: string
   name: string
+  /** Выбранный класс (опционально) — влияет на иконку-маркер в шапке. */
+  classId?: PlayerClassId
 }
 
 /** Идентификатор локального игрока по умолчанию. */
 export const LOCAL_PLAYER_ID = 'local'
 
 /** Локальный игрок по умолчанию (до появления мультиплеера). */
-export function createLocalPlayer(name = 'Avatar Name'): Player {
-  return { id: LOCAL_PLAYER_ID, name }
+export function createLocalPlayer(name = 'Avatar Name', classId?: PlayerClassId): Player {
+  return { id: LOCAL_PLAYER_ID, name, classId }
 }

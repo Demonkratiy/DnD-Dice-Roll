@@ -116,6 +116,7 @@ npm run test:watch # Vitest в watch-режиме
 | Анимация броска, жест press/shake, оркестрация | [`dev-wiki/animation-and-gesture.md`](./dev-wiki/animation-and-gesture.md) |
 | Доменное ядро броска, RNG, RollSource, мультиплеер | [`dev-wiki/rolling-domain.md`](./dev-wiki/rolling-domain.md) |
 | SVG-силуэты кубиков, вариации форм, FrameProvider | [`dev-wiki/dice-silhouettes.md`](./dev-wiki/dice-silhouettes.md) |
+| Персонаж (имя, класс, иконка-маркер), редактор героя | [`dev-wiki/character.md`](./dev-wiki/character.md) |
 
 Если документа по теме ещё нет — создай его и добавь строку в эту таблицу и в
 `dev-wiki/README.md`.

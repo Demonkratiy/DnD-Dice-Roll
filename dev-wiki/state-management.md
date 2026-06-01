@@ -15,6 +15,7 @@ flowchart TB
     subgraph App["app-слой · глобальное состояние (Context + провайдеры)"]
         Theme["ShapeProvider<br/>useState + localStorage"]
         Settings["SettingsProvider<br/>useState + localStorage"]
+        Character["CharacterProvider<br/>useState + localStorage"]
         Log["RollLogProvider<br/>useReducer (события)"]
     end
 
@@ -33,12 +34,13 @@ flowchart TB
 
 Живёт в `src/app/providers` и `src/shared/theme`. Композируется в
 [AppProviders.tsx](../src/app/providers/AppProviders.tsx):
-`ShapeProvider → ColorProvider → SettingsProvider → RollLogProvider`.
+`ShapeProvider → ColorProvider → SettingsProvider → CharacterProvider → RollLogProvider`.
 
 | Состояние | Где | Механизм | Хук доступа |
 |-----------|-----|----------|-------------|
 | Лог бросков | [RollLogProvider.tsx](../src/app/providers/RollLogProvider.tsx) | `useReducer` + [logReducer.ts](../src/entities/roll/model/logReducer.ts) | `useRollLog()` |
 | Настройки UI | [SettingsProvider.tsx](../src/app/providers/SettingsProvider.tsx) | `useState` + `localStorage` | `useSettings()` |
+| Герой (имя, класс) | [CharacterProvider.tsx](../src/app/providers/CharacterProvider.tsx) | `useState` + `localStorage` | `useCharacter()` |
 | Стиль (форма) | [ShapeProvider.tsx](../src/shared/theme/shape/ShapeProvider.tsx) | `useState` + `localStorage` + `data-theme-shapes` | `useShape()` |
 | Палитра (цвет) | [ColorProvider.tsx](../src/shared/theme/color/ColorProvider.tsx) | `useState` + `localStorage` + `data-theme-colors` | `useColor()` |
 
@@ -53,7 +55,8 @@ flowchart TB
 [RollScreen.tsx](../src/app/ui/RollScreen.tsx):
 
 - `die`, `count`, `modifier`, `mode` → из них собирается `RollRequest`;
-- `settingsOpen`, `logOpen` → открыты ли модалка настроек и drawer логов.
+- `settingsOpen`, `characterOpen`, `logOpen` → открыты ли модалки настроек,
+  редактора героя и drawer логов.
 
 Оно не глобальное намеренно: это сиюминутный выбор пользователя, не нужный
 другим частям дерева и не переживающий перезагрузку.

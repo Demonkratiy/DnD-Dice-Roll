@@ -9,6 +9,7 @@ import type { ReactNode } from 'react'
 import { ShapeProvider, ColorProvider } from '@shared/theme'
 import { RollLogProvider } from './RollLogProvider.tsx'
 import { SettingsProvider } from './SettingsProvider.tsx'
+import { CharacterProvider } from './CharacterProvider.tsx'
 
 interface AppProvidersProps {
   children: ReactNode
@@ -19,7 +20,9 @@ export function AppProviders({ children }: AppProvidersProps) {
     <ShapeProvider>
       <ColorProvider>
         <SettingsProvider>
-          <RollLogProvider>{children}</RollLogProvider>
+          <CharacterProvider>
+            <RollLogProvider>{children}</RollLogProvider>
+          </CharacterProvider>
         </SettingsProvider>
       </ColorProvider>
     </ShapeProvider>

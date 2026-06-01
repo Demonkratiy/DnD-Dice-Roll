@@ -26,20 +26,38 @@
     1;
 }
 
+/* Имя героя — кнопка (клик открывает редактор героя). Сбрасываем стили кнопки,
+ * чтобы визуально это оставалось строкой шапки. */
 .player {
   display: inline-flex;
   align-items: center;
   gap: 0.6rem;
   font-size: 1.1rem;
   font-weight: 700;
+  padding: 0.15rem 0.25rem;
+  margin: -0.15rem -0.25rem;
+  border: none;
+  background: transparent;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.player:hover .playerName {
+  opacity: 0.85;
+}
+
+.player:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 /* Руна-маркер слева от имени: ромб, окрашенный акцентом палитры, со свечением
  * того же ореола, что и кубик (--die-halo). Мгновенно реагирует на смену темы.
  * «Дышит» в такт сцене (rune-pulse); гасится при reduced-motion (.runeStill). */
 .rune {
-  width: 0.7rem;
-  height: 0.7rem;
+  width: 0.85rem;
+  height: 0.85rem;
   flex: none;
   rotate: 45deg;
   border-radius: 2px;
@@ -50,6 +68,18 @@
 
 .runeStill {
   animation: none;
+}
+
+/* Иконка класса — замена руны, когда у героя выбран класс. Тот же акцентный цвет
+ * и ореол, что и у руны, и так же «дышит» в такт сцене (gives header a beat).
+ * Свечение — мягкий ореол ВОКРУГ силуэта: один полупрозрачный слой с заметным
+ * радиусом размытия (halo расходится за пределы линий), без яркой заливки внутри,
+ * чтобы тонкие штрихи не «замыливались». */
+.classIcon {
+  flex: none;
+  color: var(--accent);
+  filter: drop-shadow(0 0 3px var(--die-halo)) drop-shadow(0 0 9px var(--die-halo));
+  animation: rune-pulse 3.2s ease-in-out infinite;
 }
 
 /* Имя — заливка акцентным градиентом палитры (accent → secondary) через
@@ -81,6 +111,10 @@
  * «отключить анимации» обрабатывается классом .runeStill из RollScreen.tsx. */
 @media (prefers-reduced-motion: reduce) {
   .rune {
+    animation: none;
+  }
+
+  .classIcon {
     animation: none;
   }
 }
