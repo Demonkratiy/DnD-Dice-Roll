@@ -26,24 +26,25 @@ export type PlayerClassId =
 /** Метаданные одного класса. */
 export interface PlayerClass {
   id: PlayerClassId
-  /** Отображаемое название. */
+  /** Каноничное (англоязычное) название — стабильный дефолт.
+   * Локализованные имена для UI живут в словарях `shared/locale`. */
   name: string
 }
 
 /** Полный список классов в алфавитном порядке (как в Player's Handbook). */
 export const PLAYER_CLASSES: readonly PlayerClass[] = [
-  { id: 'barbarian', name: 'Варвар' },
-  { id: 'bard', name: 'Бард' },
-  { id: 'cleric', name: 'Жрец' },
-  { id: 'druid', name: 'Друид' },
-  { id: 'fighter', name: 'Воин' },
-  { id: 'monk', name: 'Монах' },
-  { id: 'paladin', name: 'Паладин' },
-  { id: 'ranger', name: 'Следопыт' },
-  { id: 'rogue', name: 'Плут' },
-  { id: 'sorcerer', name: 'Чародей' },
-  { id: 'warlock', name: 'Колдун' },
-  { id: 'wizard', name: 'Волшебник' },
+  { id: 'barbarian', name: 'Barbarian' },
+  { id: 'bard', name: 'Bard' },
+  { id: 'cleric', name: 'Cleric' },
+  { id: 'druid', name: 'Druid' },
+  { id: 'fighter', name: 'Fighter' },
+  { id: 'monk', name: 'Monk' },
+  { id: 'paladin', name: 'Paladin' },
+  { id: 'ranger', name: 'Ranger' },
+  { id: 'rogue', name: 'Rogue' },
+  { id: 'sorcerer', name: 'Sorcerer' },
+  { id: 'warlock', name: 'Warlock' },
+  { id: 'wizard', name: 'Wizard' },
 ] as const
 
 /** Проверяет, что значение — допустимый идентификатор класса. */

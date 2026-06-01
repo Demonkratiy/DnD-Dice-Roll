@@ -51,6 +51,11 @@ flowchart LR
 - В CSS блоки палитры идут **после** блоков стиля и переопределяют только цветовые
   токены, не трогая форму. Так любой стиль сочетается с любой палитрой.
 
+> **Названия стилей и палитр локализуются.** В реестрах `shapes.ts`/`colors.ts`
+> поле `name` — каноничный англоязычный дефолт/ключ; в переключателе настроек
+> подпись берётся из словаря по id (`t.themeNames[id]`, `t.colorNames[id]`). См.
+> [localization.md](./localization.md).
+
 ### Файлы
 
 | Файл | Роль |
@@ -58,8 +63,8 @@ flowchart LR
 | [css/base.css](../src/shared/theme/css/base.css) | Ось «стиль» (`:root[data-theme-shapes='...']`) + базовые семантические токены |
 | [css/palettes.css](../src/shared/theme/css/palettes.css) | Ось «цвет» (`:root[data-theme-colors='...']`) — палитры по алфавиту, переопределяют акценты |
 | [css/animations.css](../src/shared/theme/css/animations.css) | Keyframes: свечение сцены (`glow-*`), дыхание кубика (`die-glow-pulse*`), дрейф (`drift-*`) |
-| [shape/shapes.ts](../src/shared/theme/shape/shapes.ts) | Реестр стилей: `ShapeId`, метаданные, превью, `DEFAULT_SHAPE_ID` |
-| [color/colors.ts](../src/shared/theme/color/colors.ts) | Реестр палитр: `ColorId`, метаданные, превью, `DEFAULT_COLOR_ID` |
+| [shape/shapes.ts](../src/shared/theme/shape/shapes.ts) | Реестр стилей: `ShapeId`, метаданные, превью, `DEFAULT_SHAPE_ID` (поле `name` — каноничный дефолт; локализованные имена — в словаре, см. ниже) |
+| [color/colors.ts](../src/shared/theme/color/colors.ts) | Реестр палитр: `ColorId`, метаданные, превью, `DEFAULT_COLOR_ID` (поле `name` — каноничный дефолт; локализованные имена — в словаре, см. ниже) |
 | [shape/ShapeProvider.tsx](../src/shared/theme/shape/ShapeProvider.tsx) | Хранит стиль, пишет `data-theme-shapes`, `localStorage` (`ddr.shape`), учитывает `prefers-color-scheme` |
 | [shape/shapeContext.ts](../src/shared/theme/shape/shapeContext.ts) | Контекст + хук `useShape()` |
 | [color/ColorProvider.tsx](../src/shared/theme/color/ColorProvider.tsx) | Хранит палитру, пишет `data-theme-colors`, `localStorage` (`ddr.color`) |

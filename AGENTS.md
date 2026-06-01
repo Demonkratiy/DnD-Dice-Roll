@@ -65,6 +65,7 @@ src/
     lib/       утилиты и хуки: rng, usePressAndShake, useRollAnimation, useReducedMotion
     services/  RollSource (+ LocalRollSource, TODO RemoteRollSource), audio
     theme/     css/ (base + palettes + animations), shape/ (shapes + ShapeProvider), color/ (colors + ColorProvider)
+    locale/    i18n: LanguageProvider, useT, dictionaries/ (ru + en) — переключение языка
     config/    константы (набор кубиков, дефолты)
 ```
 
@@ -117,6 +118,7 @@ npm run test:watch # Vitest в watch-режиме
 | Доменное ядро броска, RNG, RollSource, мультиплеер | [`dev-wiki/rolling-domain.md`](./dev-wiki/rolling-domain.md) |
 | SVG-силуэты кубиков, вариации форм, FrameProvider | [`dev-wiki/dice-silhouettes.md`](./dev-wiki/dice-silhouettes.md) |
 | Персонаж (имя, класс, иконка-маркер), редактор героя | [`dev-wiki/character.md`](./dev-wiki/character.md) |
+| Локализация: переключение языка, словари, перевод реплик | [`dev-wiki/localization.md`](./dev-wiki/localization.md) |
 
 Если документа по теме ещё нет — создай его и добавь строку в эту таблицу и в
 `dev-wiki/README.md`.

@@ -8,8 +8,6 @@ export {
 } from './model/classes.ts'
 export { ClassIcon, type ClassIconProps } from './ui/ClassIcon.tsx'
 export {
-  PLAYER_PHRASES,
-  DEFAULT_PHRASES,
   getClassPhrases,
   type ClassPhrases,
-} from './model/phrases.ts'
+} from './model/phrases/index.ts'

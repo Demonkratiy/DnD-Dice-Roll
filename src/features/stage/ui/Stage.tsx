@@ -12,6 +12,7 @@ import type { RollRequest, RollResult } from '@entities/roll'
 import { getClassPhrases, type PlayerClassId } from '@entities/player'
 import type { RollSource } from '@shared/services'
 import { useShuffleBag } from '@shared/lib'
+import { useLanguage, useT } from '@shared/locale'
 import { useStageRoll } from '../model/useStageRoll.ts'
 import styles from './Stage.module.css'
 
@@ -30,6 +31,8 @@ interface ViewDie {
 }
 
 export function Stage({ request, rollSource, reducedMotion, onResult, classId }: StageProps) {
+  const { lang } = useLanguage()
+  const t = useT()
   const { animation, isPressing, intensity, handlers, lastResult, isRolling } = useStageRoll({
     request,
     rollSource,
@@ -44,7 +47,7 @@ export function Stage({ request, rollSource, reducedMotion, onResult, classId }:
   //
   // Выбор фразы идёт через «мешок» (useShuffleBag): каждая реплика показывается
   // один раз за круг — это убирает частые повторы, свойственные «голому» random.
-  const phrases = useMemo(() => getClassPhrases(classId), [classId])
+  const phrases = useMemo(() => getClassPhrases(classId, lang), [classId, lang])
   const nextShakePhrase = useShuffleBag(phrases.shake)
   const nextReleasePhrase = useShuffleBag(phrases.release)
   const nextSuccessPhrase = useShuffleBag(phrases.success)
@@ -126,7 +129,7 @@ export function Stage({ request, rollSource, reducedMotion, onResult, classId }:
   const dieSize = viewDice.length > 4 ? 72 : viewDice.length > 1 ? 96 : 132
 
   return (
-    <section className={styles.stage} aria-label="Сцена броска">
+    <section className={styles.stage} aria-label={t.stage.sceneAria}>
       <div
         className={`${styles.tray} ${isPressing ? styles.shaking : ''} ${
           reducedMotion ? styles.still : ''
@@ -134,7 +137,7 @@ export function Stage({ request, rollSource, reducedMotion, onResult, classId }:
         style={{ '--shake': intensity } as React.CSSProperties}
         role="button"
         tabIndex={0}
-        aria-label="Бросить кубики: тап — бросок, зажать и потрясти — эффектный бросок"
+        aria-label={t.stage.trayAria}
         aria-busy={isRolling}
         {...handlers}
       >
@@ -161,7 +164,7 @@ export function Stage({ request, rollSource, reducedMotion, onResult, classId }:
                 {critPhrase}
               </span>
             ) : null}
-            <span className={styles.resultLabel}>Результат:</span>
+            <span className={styles.resultLabel}>{t.stage.resultLabel}</span>
             {lastResult.total}
             {request.count > 1 || request.modifier !== 0 ? (
               <span className={styles.breakdown}>
@@ -177,7 +180,7 @@ export function Stage({ request, rollSource, reducedMotion, onResult, classId }:
         ) : isRolling ? (
           <span className={styles.status}>{releasePhrase}</span>
         ) : (
-          <span className={styles.hint}>Нажми кубик, чтобы бросить · зажми и потряси</span>
+          <span className={styles.hint}>{t.stage.hint}</span>
         )}
       </div>
     </section>

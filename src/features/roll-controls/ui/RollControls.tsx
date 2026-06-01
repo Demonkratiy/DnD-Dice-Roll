@@ -8,6 +8,7 @@
 import { Stepper, Segmented } from '@shared/ui'
 import type { DieType } from '@entities/die'
 import type { RollMode } from '@entities/roll'
+import { useT } from '@shared/locale'
 import styles from './RollControls.module.css'
 
 export interface RollControlsProps {
@@ -21,12 +22,6 @@ export interface RollControlsProps {
   maxCount?: number
 }
 
-const MODE_OPTIONS: { value: RollMode; label: string }[] = [
-  { value: 'disadvantage', label: 'Помеха' },
-  { value: 'normal', label: 'Обычный' },
-  { value: 'advantage', label: 'Преим.' },
-]
-
 export function RollControls({
   die,
   count,
@@ -37,11 +32,18 @@ export function RollControls({
   onModeChange,
   maxCount = 12,
 }: RollControlsProps) {
+  const t = useT()
+  const modeOptions: { value: RollMode; label: string }[] = [
+    { value: 'disadvantage', label: t.rollControls.modeDisadvantage },
+    { value: 'normal', label: t.rollControls.modeNormal },
+    { value: 'advantage', label: t.rollControls.modeAdvantage },
+  ]
+
   return (
     <div className={styles.controls}>
-      <Stepper label="Кубики" value={count} min={1} max={maxCount} onChange={onCountChange} />
+      <Stepper label={t.rollControls.count} value={count} min={1} max={maxCount} onChange={onCountChange} />
       <Stepper
-        label="Модификатор"
+        label={t.rollControls.modifier}
         value={modifier}
         min={-20}
         max={20}
@@ -50,7 +52,7 @@ export function RollControls({
       />
       {die === 'd20' && (
         <div className={styles.mode}>
-          <Segmented label="Режим броска" options={MODE_OPTIONS} value={mode} onChange={onModeChange} />
+          <Segmented label={t.rollControls.modeAria} options={modeOptions} value={mode} onChange={onModeChange} />
         </div>
       )}
     </div>

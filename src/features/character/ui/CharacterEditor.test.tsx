@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { render, screen, cleanup, fireEvent } from '@testing-library/react'
+import { LanguageProvider } from '@shared/locale'
 import { CharacterEditor, type CharacterEditorProps } from './CharacterEditor.tsx'
 
 afterEach(cleanup)
@@ -15,7 +16,11 @@ function setup(overrides: Partial<CharacterEditorProps> = {}) {
     onClassChange: vi.fn(),
     ...overrides,
   }
-  render(<CharacterEditor {...props} />)
+  render(
+    <LanguageProvider>
+      <CharacterEditor {...props} />
+    </LanguageProvider>,
+  )
   return props
 }
 

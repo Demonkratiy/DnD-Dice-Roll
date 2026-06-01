@@ -7,6 +7,7 @@
 
 import type { ReactNode } from 'react'
 import { ShapeProvider, ColorProvider } from '@shared/theme'
+import { LanguageProvider } from '@shared/locale'
 import { RollLogProvider } from './RollLogProvider.tsx'
 import { SettingsProvider } from './SettingsProvider.tsx'
 import { CharacterProvider } from './CharacterProvider.tsx'
@@ -17,14 +18,16 @@ interface AppProvidersProps {
 
 export function AppProviders({ children }: AppProvidersProps) {
   return (
-    <ShapeProvider>
-      <ColorProvider>
-        <SettingsProvider>
-          <CharacterProvider>
-            <RollLogProvider>{children}</RollLogProvider>
-          </CharacterProvider>
-        </SettingsProvider>
-      </ColorProvider>
-    </ShapeProvider>
+    <LanguageProvider>
+      <ShapeProvider>
+        <ColorProvider>
+          <SettingsProvider>
+            <CharacterProvider>
+              <RollLogProvider>{children}</RollLogProvider>
+            </CharacterProvider>
+          </SettingsProvider>
+        </ColorProvider>
+      </ShapeProvider>
+    </LanguageProvider>
   )
 }

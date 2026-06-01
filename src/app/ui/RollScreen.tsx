@@ -9,6 +9,7 @@ import { useMemo, useState } from 'react'
 import { IconButton } from '@shared/ui'
 import { createLocalRollSource } from '@shared/services'
 import { useReducedMotion } from '@shared/lib'
+import { useT } from '@shared/locale'
 import { createLocalPlayer, ClassIcon } from '@entities/player'
 import type { DieType } from '@entities/die'
 import type { RollMode, RollRequest, RollResult } from '@entities/roll'
@@ -23,6 +24,7 @@ import styles from './RollScreen.module.css'
 
 export function RollScreen() {
   const character = useCharacter()
+  const t = useT()
   const player = useMemo(
     () => createLocalPlayer(character.name, character.classId),
     [character.name, character.classId],
@@ -68,7 +70,7 @@ export function RollScreen() {
           type="button"
           className={styles.player}
           onClick={() => setCharacterOpen(true)}
-          aria-label="Редактировать героя"
+          aria-label={t.character.edit}
         >
           {/* Маркер перед именем: если выбран класс — его иконка, иначе аморфная
            * руна. Оба окрашены акцентом палитры и светятся тем же ореолом, что и
@@ -88,7 +90,7 @@ export function RollScreen() {
           )}
           <span className={styles.playerName}>{player.name}</span>
         </button>
-        <IconButton label="Настройки" onClick={() => setSettingsOpen(true)}>
+        <IconButton label={t.settings.open} onClick={() => setSettingsOpen(true)}>
           ⚙
         </IconButton>
       </header>

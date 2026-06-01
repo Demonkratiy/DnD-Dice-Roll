@@ -54,7 +54,7 @@ flowchart TB
 | Реестр классов | [classes.ts](../src/entities/player/model/classes.ts) | 12 классов 5e (id + имя), `isPlayerClassId` |
 | Модель игрока | [types.ts](../src/entities/player/model/types.ts) | `Player` с опциональным `classId`, сериализуема |
 | Иконки классов | [ClassIcon.tsx](../src/entities/player/ui/ClassIcon.tsx) | плоские SVG-силуэты, цвет через `currentColor` |
-| Реплики по классам | [phrases.ts](../src/entities/player/model/phrases.ts) | фразы «тряска»/«бросок» по классам, `getClassPhrases` |
+| Реплики по классам | [phrases/](../src/entities/player/model/phrases/) | фразы «тряска»/«бросок» по классам и языкам, `getClassPhrases` |
 | Состояние героя | [CharacterProvider.tsx](../src/app/providers/CharacterProvider.tsx) | `useState` + `localStorage` (`ddr.character`) |
 | Хук/контекст | [characterContext.ts](../src/app/providers/characterContext.ts) | `useCharacter()` |
 | Редактор | [CharacterEditor.tsx](../src/features/character/ui/CharacterEditor.tsx) | модалка: имя + выбор класса |
@@ -83,14 +83,16 @@ flowchart TB
 
 Чтобы бросок «звучал» по-разному у каждого класса, под сценой выводится короткая
 реплика, **зависящая и от фазы жеста, и от класса героя**. Данные — чистые и
-сериализуемые — лежат в [phrases.ts](../src/entities/player/model/phrases.ts):
+сериализуемые — лежат в [phrases/](../src/entities/player/model/phrases/),
+разнесённые по языкам (см. [localization.md](./localization.md)):
 
 - `ClassPhrases` = два набора строк: `shake` (пока зажали и **трясём** кубики) и
   `release` (отпустили — кубики **крутятся**, ждём результат в предвкушении);
   плюс `success` / `fail` — реплики на критический исход d20 (натуральная 20 / 1);
-- `PLAYER_PHRASES` покрывает все 12 классов; без выбранного класса берётся
-  нейтральный `DEFAULT_PHRASES`;
-- `getClassPhrases(classId?)` — единственная точка доступа (фолбэк на дефолт).
+- наборы покрывают все 12 классов для каждого языка; без выбранного класса
+  берётся нейтральный дефолтный набор;
+- `getClassPhrases(classId?, lang?)` — единственная точка доступа (фолбэк на
+  дефолтный набор и на язык по умолчанию).
 
 Выбор конкретной строки живёт в UI — в
 [Stage.tsx](../src/features/stage/ui/Stage.tsx). Чтобы реплики не повторялись

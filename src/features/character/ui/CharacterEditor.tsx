@@ -10,6 +10,7 @@
  */
 
 import { PLAYER_CLASSES, ClassIcon, type PlayerClassId } from '@entities/player'
+import { useT } from '@shared/locale'
 import styles from './CharacterEditor.module.css'
 
 export interface CharacterEditorProps {
@@ -29,6 +30,8 @@ export function CharacterEditor({
   classId,
   onClassChange,
 }: CharacterEditorProps) {
+  const t = useT()
+
   if (!open) {
     return null
   }
@@ -52,24 +55,24 @@ export function CharacterEditor({
         className={styles.panel}
         role="dialog"
         aria-modal="true"
-        aria-label="Редактирование героя"
+        aria-label={t.character.ariaLabel}
         onClick={(event) => event.stopPropagation()}
       >
         <div className={styles.header}>
-          <h2 className={styles.title}>Герой</h2>
-          <button type="button" className={styles.close} aria-label="Закрыть" onClick={onClose}>
+          <h2 className={styles.title}>{t.character.title}</h2>
+          <button type="button" className={styles.close} aria-label={t.character.close} onClick={onClose}>
             ✕
           </button>
         </div>
 
         <label className={styles.group}>
-          <span className={styles.groupLabel}>Имя</span>
+          <span className={styles.groupLabel}>{t.character.nameLabel}</span>
           <input
             className={styles.input}
             type="text"
             value={name}
             maxLength={40}
-            placeholder="Имя героя"
+            placeholder={t.character.namePlaceholder}
             autoFocus
             onChange={(event) => onNameChange(event.target.value)}
             onKeyDown={(event) => {
@@ -83,8 +86,8 @@ export function CharacterEditor({
         </label>
 
         <div className={styles.group}>
-          <span className={styles.groupLabel}>Класс</span>
-          <div className={styles.grid} role="radiogroup" aria-label="Класс героя">
+          <span className={styles.groupLabel}>{t.character.classLabel}</span>
+          <div className={styles.grid} role="radiogroup" aria-label={t.character.classAria}>
             <button
               type="button"
               className={`${styles.cell} ${styles.cellNone} ${classId === undefined ? styles.active : ''}`}
@@ -96,7 +99,7 @@ export function CharacterEditor({
               <span className={styles.cellIcon} aria-hidden="true">
                 ∅
               </span>
-              <span className={styles.cellLabel}>Без класса</span>
+              <span className={styles.cellLabel}>{t.character.noClass}</span>
             </button>
 
             {PLAYER_CLASSES.map((cls) => {
@@ -112,7 +115,7 @@ export function CharacterEditor({
                   onKeyDown={(event) => handleClassKeyDown(event, cls.id)}
                 >
                   <ClassIcon classId={cls.id} size={32} className={styles.cellIcon} />
-                  <span className={styles.cellLabel}>{cls.name}</span>
+                  <span className={styles.cellLabel}>{t.classNames[cls.id]}</span>
                 </button>
               )
             })}

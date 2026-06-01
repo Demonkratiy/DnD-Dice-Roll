@@ -4,6 +4,7 @@
  */
 
 import { DIE_TYPES, Die, type DieType } from '@entities/die'
+import { useT } from '@shared/locale'
 import styles from './DicePicker.module.css'
 
 export interface DicePickerProps {
@@ -12,8 +13,9 @@ export interface DicePickerProps {
 }
 
 export function DicePicker({ value, onChange }: DicePickerProps) {
+  const t = useT()
   return (
-    <div className={styles.picker} role="radiogroup" aria-label="Выбор кубика">
+    <div className={styles.picker} role="radiogroup" aria-label={t.dicePicker.groupAria}>
       {DIE_TYPES.map((die) => {
         const selected = die === value
         return (

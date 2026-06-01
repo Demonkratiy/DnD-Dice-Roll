@@ -5,6 +5,7 @@
 
 import { Drawer } from '@shared/ui'
 import type { RollResult } from '@entities/roll'
+import { useT } from '@shared/locale'
 import styles from './LogDrawer.module.css'
 
 /**
@@ -56,20 +57,21 @@ function formatTime(timestamp: number): string {
 }
 
 export function LogDrawer({ entries, open, onOpenChange, onClear }: LogDrawerProps) {
+  const t = useT()
   return (
     <Drawer
       open={open}
       onOpenChange={onOpenChange}
       handleIcon={<EyeBookIcon />}
-      handleLabel="История бросков"
-      title="История бросков"
+      handleLabel={t.log.handleLabel}
+      title={t.log.title}
     >
       {entries.length === 0 ? (
-        <p className={styles.empty}>Пока нет бросков. Брось кубик!</p>
+        <p className={styles.empty}>{t.log.empty}</p>
       ) : (
         <>
           <button type="button" className={styles.clear} onClick={onClear}>
-            Очистить
+            {t.log.clear}
           </button>
           <ul className={styles.list}>
             {entries.map((entry) => (
