@@ -3,7 +3,7 @@
  *
  * Повторяет ровно те же ключи, что и `ru` (источник типа `Dictionary`) — TS не
  * даст забыть ни одной строки. Названия классов даны в привычной для татарского
- * фэнтези-традиции; различаем sorcerer/warlock/wizard (Сихерче / Им-томчы / Тылсымчы).
+ * фэнтези-традиции; различаем sorcerer/warlock/wizard (Фәсүнче / Мәлгүн / Тылсымчы).
  */
 import type { Dictionary } from './dictionary.ts'
 
@@ -63,11 +63,11 @@ export const tt: Dictionary = {
   },
   colorNames: {
     arcane: 'Серле',
-    charm: 'Сихер',
-    crimson: 'Кызыл',
+    charm: 'Ауру',
+    crimson: 'Ал',
     darkness: 'Караңгылык',
-    ember: 'Учак',
-    frost: 'Салкын',
+    ember: 'Куз',
+    frost: 'Суыклык',
     nature: 'Табигать',
     necrotic: 'Үлем',
     radiant: 'Балкыш',
