@@ -130,3 +130,5 @@ npm run test:watch # Vitest в watch-режиме
 - [x] Фаза 4 — кубик, силуэты, анимация (scramble→settle→reveal), жест, Сцена.
 - [x] Фаза 5 — UI и компоновка (ui-kit, dice-picker, roll-controls, settings, log Drawer).
 - [x] Фаза 6 — финальная актуализация документации + проверки (typecheck/lint/test/build зелёные).
+- [x] Фаза 7 — герой (имя, класс, иконка-маркер) и «эмоции» броска: статусы под сценой
+  (тряска → бросок → результат) с репликами по классам (`phrases.ts`).

@@ -99,6 +99,7 @@ export function RollScreen() {
           rollSource={rollSource}
           reducedMotion={reducedMotion}
           onResult={handleResult}
+          classId={player.classId}
         />
         <DicePicker value={die} onChange={handleDieChange} />
         <RollControls

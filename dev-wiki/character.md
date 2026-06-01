@@ -54,6 +54,7 @@ flowchart TB
 | Реестр классов | [classes.ts](../src/entities/player/model/classes.ts) | 12 классов 5e (id + имя), `isPlayerClassId` |
 | Модель игрока | [types.ts](../src/entities/player/model/types.ts) | `Player` с опциональным `classId`, сериализуема |
 | Иконки классов | [ClassIcon.tsx](../src/entities/player/ui/ClassIcon.tsx) | плоские SVG-силуэты, цвет через `currentColor` |
+| Реплики по классам | [phrases.ts](../src/entities/player/model/phrases.ts) | фразы «тряска»/«бросок» по классам, `getClassPhrases` |
 | Состояние героя | [CharacterProvider.tsx](../src/app/providers/CharacterProvider.tsx) | `useState` + `localStorage` (`ddr.character`) |
 | Хук/контекст | [characterContext.ts](../src/app/providers/characterContext.ts) | `useCharacter()` |
 | Редактор | [CharacterEditor.tsx](../src/features/character/ui/CharacterEditor.tsx) | модалка: имя + выбор класса |
@@ -77,6 +78,29 @@ flowchart TB
 > Силуэты подбирались по **одному узнаваемому атрибуту** класса. Магическая троица
 > разведена осмысленно: палочка-фокус → Волшебник (учёный маг), вспышка изнутри →
 > Чародей (врождённая магия), печать-договор → Колдун (сделка с покровителем).
+
+## Реплики героя во время броска
+
+Чтобы бросок «звучал» по-разному у каждого класса, под сценой выводится короткая
+реплика, **зависящая и от фазы жеста, и от класса героя**. Данные — чистые и
+сериализуемые — лежат в [phrases.ts](../src/entities/player/model/phrases.ts):
+
+- `ClassPhrases` = два набора строк: `shake` (пока зажали и **трясём** кубики) и
+  `release` (отпустили — кубики **крутятся**, ждём результат в предвкушении);
+- `PLAYER_PHRASES` покрывает все 12 классов; без выбранного класса берётся
+  нейтральный `DEFAULT_PHRASES`;
+- `getClassPhrases(classId?)` — единственная точка доступа (фолбэк на дефолт).
+
+Выбор конкретной строки (случайный, `pickRandom`) живёт в UI — в
+[Stage.tsx](../src/features/stage/ui/Stage.tsx). Фраза фиксируется **один раз на вход
+в фазу** (через корректировку состояния во время рендера по фронту `isPressing` /
+`isRolling`), чтобы текст не «мерцал» на каждом кадре, и обновляется для каждого
+нового жеста. Какая из трёх надписей показана (`Результат:` / реплика тряски /
+реплика броска / подсказка) — см. [animation-and-gesture.md](./animation-and-gesture.md).
+
+> Концепция фраз строгая: `shake` всегда описывает **сам процесс тряски** в манере
+> класса (варвар трясёт со всей дури, жрец — с молитвой, плут — украдкой), а
+> `release` — **вращение кубиков и ожидание** исхода, без «спойлера» результата.
 
 ## Маркер в шапке: руна ↔ иконка
 
@@ -114,6 +138,9 @@ flowchart TB
 
 - [classes.test.ts](../src/entities/player/model/classes.test.ts) — полнота реестра,
   уникальность id, `isPlayerClassId`, `createLocalPlayer` (сериализуемость).
+- [phrases.test.ts](../src/entities/player/model/phrases.test.ts) — покрытие всех
+  классов, непустые наборы `shake`/`release`, валидность строк, `getClassPhrases`
+  (выбор класса и фолбэк на `DEFAULT_PHRASES`).
 - [CharacterEditor.test.tsx](../src/features/character/ui/CharacterEditor.test.tsx) —
   рендер, ввод имени, выбор/сброс класса, `aria-checked`, оверлей и вся клавиатура.
 - [CharacterProvider.test.tsx](../src/app/providers/CharacterProvider.test.tsx) —

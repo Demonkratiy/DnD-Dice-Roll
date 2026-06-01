@@ -6,9 +6,10 @@
  * кубиках во время тряски они хаотично подрагивают каждый по-своему.
  */
 
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { Die, getDieSides, type DieEmphasis } from '@entities/die'
 import type { RollRequest, RollResult } from '@entities/roll'
+import { getClassPhrases, type PlayerClassId } from '@entities/player'
 import type { RollSource } from '@shared/services'
 import { useStageRoll } from '../model/useStageRoll.ts'
 import styles from './Stage.module.css'
@@ -18,6 +19,8 @@ export interface StageProps {
   rollSource: RollSource
   reducedMotion?: boolean
   onResult?: (result: RollResult) => void
+  /** Класс героя — определяет набор реплик во время броска. */
+  classId?: PlayerClassId
 }
 
 interface ViewDie {
@@ -25,13 +28,42 @@ interface ViewDie {
   frameIndex: number
 }
 
-export function Stage({ request, rollSource, reducedMotion, onResult }: StageProps) {
+/** Случайный элемент непустого массива (для выбора реплики героя). */
+function pickRandom<T>(items: readonly T[]): T {
+  return items[Math.floor(Math.random() * items.length)]
+}
+
+export function Stage({ request, rollSource, reducedMotion, onResult, classId }: StageProps) {
   const { animation, isPressing, intensity, handlers, lastResult, isRolling } = useStageRoll({
     request,
     rollSource,
     reducedMotion,
     onResult,
   })
+
+  // Реплики героя по классу. Фразу выбираем один раз на вход в фазу (тряска /
+  // бросок), чтобы текст не «мерцал» на каждом кадре, и обновляем для каждого
+  // нового жеста. Используем паттерн «корректировка состояния во время рендера»
+  // (без эффекта): отслеживаем фронт перехода в фазу по предыдущему значению.
+  const phrases = useMemo(() => getClassPhrases(classId), [classId])
+  const [shakePhrase, setShakePhrase] = useState(() => pickRandom(phrases.shake))
+  const [releasePhrase, setReleasePhrase] = useState(() => pickRandom(phrases.release))
+
+  const [wasPressing, setWasPressing] = useState(isPressing)
+  if (isPressing !== wasPressing) {
+    setWasPressing(isPressing)
+    if (isPressing) {
+      setShakePhrase(pickRandom(phrases.shake))
+    }
+  }
+
+  const [wasRolling, setWasRolling] = useState(isRolling)
+  if (isRolling !== wasRolling) {
+    setWasRolling(isRolling)
+    if (isRolling) {
+      setReleasePhrase(pickRandom(phrases.release))
+    }
+  }
 
   // Что рисуем: кадры анимации либо «покоящиеся» кубики с максимумом номинала.
   const viewDice: ViewDie[] = useMemo(() => {
@@ -60,7 +92,7 @@ export function Stage({ request, rollSource, reducedMotion, onResult }: StagePro
     return 'idle'
   }
 
-  const showTotal = lastResult != null && !isRolling
+  const showTotal = lastResult != null && !isRolling && !isPressing
   const dieSize = viewDice.length > 4 ? 72 : viewDice.length > 1 ? 96 : 132
 
   return (
@@ -92,6 +124,7 @@ export function Stage({ request, rollSource, reducedMotion, onResult }: StagePro
       <div className={styles.readout} aria-live="polite">
         {showTotal ? (
           <span className={styles.total}>
+            <span className={styles.resultLabel}>Результат:</span>
             {lastResult.total}
             {request.count > 1 || request.modifier !== 0 ? (
               <span className={styles.breakdown}>
@@ -102,6 +135,10 @@ export function Stage({ request, rollSource, reducedMotion, onResult }: StagePro
               </span>
             ) : null}
           </span>
+        ) : isPressing ? (
+          <span className={styles.status}>{shakePhrase}</span>
+        ) : isRolling ? (
+          <span className={styles.status}>{releasePhrase}</span>
         ) : (
           <span className={styles.hint}>Нажми кубик, чтобы бросить · зажми и потряси</span>
         )}
