@@ -11,6 +11,7 @@ import { Die, getDieSides, type DieEmphasis } from '@entities/die'
 import type { RollRequest, RollResult } from '@entities/roll'
 import { getClassPhrases, type PlayerClassId } from '@entities/player'
 import type { RollSource } from '@shared/services'
+import { useShuffleBag } from '@shared/lib'
 import { useStageRoll } from '../model/useStageRoll.ts'
 import styles from './Stage.module.css'
 
@@ -28,11 +29,6 @@ interface ViewDie {
   frameIndex: number
 }
 
-/** Случайный элемент непустого массива (для выбора реплики героя). */
-function pickRandom<T>(items: readonly T[]): T {
-  return items[Math.floor(Math.random() * items.length)]
-}
-
 export function Stage({ request, rollSource, reducedMotion, onResult, classId }: StageProps) {
   const { animation, isPressing, intensity, handlers, lastResult, isRolling } = useStageRoll({
     request,
@@ -45,15 +41,22 @@ export function Stage({ request, rollSource, reducedMotion, onResult, classId }:
   // бросок), чтобы текст не «мерцал» на каждом кадре, и обновляем для каждого
   // нового жеста. Используем паттерн «корректировка состояния во время рендера»
   // (без эффекта): отслеживаем фронт перехода в фазу по предыдущему значению.
+  //
+  // Выбор фразы идёт через «мешок» (useShuffleBag): каждая реплика показывается
+  // один раз за круг — это убирает частые повторы, свойственные «голому» random.
   const phrases = useMemo(() => getClassPhrases(classId), [classId])
-  const [shakePhrase, setShakePhrase] = useState(() => pickRandom(phrases.shake))
-  const [releasePhrase, setReleasePhrase] = useState(() => pickRandom(phrases.release))
+  const nextShakePhrase = useShuffleBag(phrases.shake)
+  const nextReleasePhrase = useShuffleBag(phrases.release)
+  const nextSuccessPhrase = useShuffleBag(phrases.success)
+  const nextFailPhrase = useShuffleBag(phrases.fail)
+  const [shakePhrase, setShakePhrase] = useState(() => nextShakePhrase())
+  const [releasePhrase, setReleasePhrase] = useState(() => nextReleasePhrase())
 
   const [wasPressing, setWasPressing] = useState(isPressing)
   if (isPressing !== wasPressing) {
     setWasPressing(isPressing)
     if (isPressing) {
-      setShakePhrase(pickRandom(phrases.shake))
+      setShakePhrase(nextShakePhrase())
     }
   }
 
@@ -61,7 +64,34 @@ export function Stage({ request, rollSource, reducedMotion, onResult, classId }:
   if (isRolling !== wasRolling) {
     setWasRolling(isRolling)
     if (isRolling) {
-      setReleasePhrase(pickRandom(phrases.release))
+      setReleasePhrase(nextReleasePhrase())
+    }
+  }
+
+  // Критический исход d20: имеет смысл только для одиночного d20 (одна
+  // учитываемая кость). Натуральная 20 — крит-успех, натуральная 1 — крит-провал.
+  const critKind: 'success' | 'fail' | null = useMemo(() => {
+    if (!lastResult || request.die !== 'd20' || lastResult.dice.length !== 1) {
+      return null
+    }
+    const value = lastResult.dice[0].value
+    if (value === 20) return 'success'
+    if (value === 1) return 'fail'
+    return null
+  }, [lastResult, request.die])
+
+  // Реплику на крит выбираем один раз на новый результат (по его id), чтобы текст
+  // не пересчитывался на каждом кадре анимации.
+  const [critPhrase, setCritPhrase] = useState<string | null>(null)
+  const [lastResultId, setLastResultId] = useState(lastResult?.id)
+  if (lastResult?.id !== lastResultId) {
+    setLastResultId(lastResult?.id)
+    if (critKind === 'success') {
+      setCritPhrase(nextSuccessPhrase())
+    } else if (critKind === 'fail') {
+      setCritPhrase(nextFailPhrase())
+    } else {
+      setCritPhrase(null)
     }
   }
 
@@ -124,6 +154,13 @@ export function Stage({ request, rollSource, reducedMotion, onResult, classId }:
       <div className={styles.readout} aria-live="polite">
         {showTotal ? (
           <span className={styles.total}>
+            {critPhrase ? (
+              <span
+                className={critKind === 'success' ? styles.critSuccess : styles.critFail}
+              >
+                {critPhrase}
+              </span>
+            ) : null}
             <span className={styles.resultLabel}>Результат:</span>
             {lastResult.total}
             {request.count > 1 || request.modifier !== 0 ? (

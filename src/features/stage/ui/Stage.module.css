@@ -114,6 +114,25 @@
   color: var(--text-muted);
 }
 
+/* Реплика на критический исход d20 — над итоговым числом. */
+.critSuccess,
+.critFail {
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  margin-bottom: 0.15rem;
+}
+
+.critSuccess {
+  color: var(--crit-success);
+  text-shadow: 0 0 12px color-mix(in srgb, var(--crit-success) 45%, transparent);
+}
+
+.critFail {
+  color: var(--crit-fail);
+  text-shadow: 0 0 12px color-mix(in srgb, var(--crit-fail) 45%, transparent);
+}
+
 .status {
   font-size: 1.1rem;
   font-weight: 600;

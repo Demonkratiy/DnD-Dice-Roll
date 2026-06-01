@@ -14,19 +14,28 @@ describe('PLAYER_PHRASES', () => {
     expect(Object.keys(PLAYER_PHRASES)).toHaveLength(PLAYER_CLASSES.length)
   })
 
-  it('у каждого класса есть непустые наборы shake и release', () => {
+  it('у каждого класса есть непустые наборы shake, release, success и fail', () => {
     for (const cls of PLAYER_CLASSES) {
       const phrases = PLAYER_PHRASES[cls.id]
       expect(phrases.shake.length).toBeGreaterThan(0)
       expect(phrases.release.length).toBeGreaterThan(0)
+      expect(phrases.success.length).toBeGreaterThan(0)
+      expect(phrases.fail.length).toBeGreaterThan(0)
     }
   })
 
   it('все реплики — непустые строки', () => {
     const all = [
-      ...Object.values(PLAYER_PHRASES).flatMap((p) => [...p.shake, ...p.release]),
+      ...Object.values(PLAYER_PHRASES).flatMap((p) => [
+        ...p.shake,
+        ...p.release,
+        ...p.success,
+        ...p.fail,
+      ]),
       ...DEFAULT_PHRASES.shake,
       ...DEFAULT_PHRASES.release,
+      ...DEFAULT_PHRASES.success,
+      ...DEFAULT_PHRASES.fail,
     ]
     for (const phrase of all) {
       expect(typeof phrase).toBe('string')

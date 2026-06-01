@@ -15,3 +15,4 @@ export {
   type PressAndShakeHandlers,
 } from './usePressAndShake.ts'
 export { useReducedMotion } from './useReducedMotion.ts'
+export { useShuffleBag } from './useShuffleBag.ts'
