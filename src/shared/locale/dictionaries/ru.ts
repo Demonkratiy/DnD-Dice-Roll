@@ -52,6 +52,7 @@ export const ru = {
     modeDisadvantage: 'Помеха',
     modeNormal: 'Обычный',
     modeAdvantage: 'Преим.',
+    modeElven: 'Эльф. меткость',
   },
   log: {
     title: 'История бросков',

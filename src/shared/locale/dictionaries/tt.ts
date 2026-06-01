@@ -50,6 +50,7 @@ export const tt: Dictionary = {
     modeDisadvantage: 'Комачау',
     modeNormal: 'Гадәти',
     modeAdvantage: 'Өстен.',
+    modeElven: 'Эльф төзлек',
   },
   log: {
     title: 'Ату тарихы',

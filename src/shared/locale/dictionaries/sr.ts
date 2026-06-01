@@ -50,6 +50,7 @@ export const sr: Dictionary = {
     modeDisadvantage: 'Mana',
     modeNormal: 'Običan',
     modeAdvantage: 'Pred.',
+    modeElven: 'Vilenj. nišan',
   },
   log: {
     title: 'Istorija bacanja',

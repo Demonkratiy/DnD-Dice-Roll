@@ -51,6 +51,7 @@ export const en: Dictionary = {
     modeDisadvantage: 'Disadv.',
     modeNormal: 'Normal',
     modeAdvantage: 'Adv.',
+    modeElven: 'Elven acc.',
   },
   log: {
     title: 'Roll history',

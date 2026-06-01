@@ -81,6 +81,30 @@ describe('rollDice', () => {
     expect(outcome.total).toBe(8)
   })
 
+  it('преимущество с пулом из трёх (эльфийская меткость) берёт наибольший из трёх', () => {
+    const rng = sequenceRng([
+      valueToRandom(7, 20),
+      valueToRandom(19, 20),
+      valueToRandom(12, 20),
+    ])
+    const outcome = rollDice({ die: 'd20', count: 3, modifier: 2, mode: 'advantage' }, rng)
+
+    expect(outcome.dice).toHaveLength(1)
+    expect(outcome.dice[0].value).toBe(19)
+    expect(outcome.dropped.map((d) => d.value)).toEqual([7, 12])
+    expect(outcome.total).toBe(19 + 2)
+  })
+
+  it('помеха с пулом из двух берёт наименьший, второй уходит в dropped', () => {
+    const rng = sequenceRng([valueToRandom(11, 20), valueToRandom(4, 20)])
+    const outcome = rollDice({ die: 'd20', count: 2, modifier: 0, mode: 'disadvantage' }, rng)
+
+    expect(outcome.dice).toHaveLength(1)
+    expect(outcome.dice[0].value).toBe(4)
+    expect(outcome.dropped.map((d) => d.value)).toEqual([11])
+    expect(outcome.total).toBe(4)
+  })
+
   it('некорректное количество костей приводится к минимум одной', () => {
     const rng = sequenceRng([valueToRandom(2, 4)])
     const outcome = rollDice({ die: 'd4', count: 0, modifier: 0, mode: 'normal' }, rng)

@@ -143,6 +143,15 @@
   animation-duration: 0.19s;
 }
 
+/* Отброшенная кость пула (проигравший бросок при преимуществе/помехе): гасим
+ * свечение, приглушаем и чуть уменьшаем — победитель остаётся в фокусе. */
+.droppedDie {
+  opacity: 0.4;
+  filter: grayscale(0.5);
+  transform: scale(0.82);
+  transition: opacity 0.3s ease, transform 0.3s ease, filter 0.3s ease;
+}
+
 .readout {
   min-height: 3.5rem;
   display: flex;

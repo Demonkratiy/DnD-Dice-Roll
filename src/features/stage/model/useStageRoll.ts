@@ -39,6 +39,12 @@ export interface UseStageRollResult {
   lastResult: RollResult | null
   /** Идёт ли сейчас бросок/анимация (жест заблокирован). */
   isRolling: boolean
+  /**
+   * Маска отброшенных костей по позиции в показанном пуле (true — проигравшая
+   * кость при adv/dis). Порядок пула перемешан, чтобы победитель не оказывался
+   * всегда на одном месте — иначе пропадает интрига до завершения броска.
+   */
+  droppedFlags: boolean[]
 }
 
 export function useStageRoll({
@@ -53,6 +59,7 @@ export function useStageRoll({
   })
 
   const [lastResult, setLastResult] = useState<RollResult | null>(null)
+  const [droppedFlags, setDroppedFlags] = useState<boolean[]>([])
   const pendingRef = useRef<RollResult | null>(null)
   const isRolling = animation.phase === 'scramble' || animation.phase === 'settle'
 
@@ -73,8 +80,19 @@ export function useStageRoll({
     async (intensity: number) => {
       const result = await rollSource.roll(request)
       pendingRef.current = result
+      // Показываем весь пул, но в ПЕРЕМЕШАННОМ порядке: иначе победитель (kept)
+      // всегда оказывается слева и выдаёт исход ещё до конца анимации. Перемешивание
+      // здесь — чисто презентационное (позиции на сцене), на честный результат оно
+      // не влияет, поэтому Math.random тут уместен (это не доменный код).
+      const pool = [...result.dice.map((roll) => ({ value: roll.value, dropped: false })),
+        ...result.dropped.map((roll) => ({ value: roll.value, dropped: true }))]
+      for (let i = pool.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1))
+        ;[pool[i], pool[j]] = [pool[j], pool[i]]
+      }
+      setDroppedFlags(pool.map((p) => p.dropped))
       start({
-        values: result.dice.map((roll) => roll.value),
+        values: pool.map((p) => p.value),
         sides: getDieSides(request.die),
         intensity,
       })
@@ -104,5 +122,6 @@ export function useStageRoll({
     handlers: press.handlers,
     lastResult,
     isRolling,
+    droppedFlags,
   }
 }

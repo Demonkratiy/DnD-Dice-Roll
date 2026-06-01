@@ -54,11 +54,15 @@ export function RollScreen() {
   )
 
   const handleDieChange = (next: DieType) => {
-    setDie(next)
-    // adv/dis осмыслен только для d20 — на других кубиках сбрасываем в обычный.
-    if (next !== 'd20') {
+    // d20 управляется единым переключателем (режим + размер пула), а количество
+    // для него всегда 1/2/3. У остальных кубиков количество — это сумма (Nd6),
+    // а режим всегда обычный. Поэтому при переходе через границу d20 сбрасываем
+    // и режим, и количество в безопасные значения по умолчанию.
+    if (next === 'd20' || die === 'd20') {
       setMode('normal')
+      setCount(1)
     }
+    setDie(next)
   }
 
   const handleResult = (result: RollResult) => addRoll(result)

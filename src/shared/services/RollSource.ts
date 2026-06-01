@@ -12,7 +12,7 @@
 
 import { rollDice, type RollRequest, type RollResult } from '@entities/roll'
 import type { Player } from '@entities/player'
-import { createMathRandomRng, type Rng } from '@shared/lib'
+import { createCryptoRng, type Rng } from '@shared/lib'
 
 /** Абстрактный источник бросков. */
 export interface RollSource {
@@ -22,7 +22,7 @@ export interface RollSource {
 
 /** Зависимости локального источника (всё инъектируется ради тестируемости). */
 export interface LocalRollSourceDeps {
-  /** Источник случайности. По умолчанию — на основе Math.random. */
+  /** Источник случайности. По умолчанию — криптостойкий (crypto.getRandomValues). */
   rng?: Rng
   /** Кто автор броска (на будущее — текущий игрок). */
   getAuthor: () => Player
@@ -45,7 +45,7 @@ function defaultCreateId(): string {
  * его метаданными события (id, время, автор).
  */
 export function createLocalRollSource(deps: LocalRollSourceDeps): RollSource {
-  const rng = deps.rng ?? createMathRandomRng()
+  const rng = deps.rng ?? createCryptoRng()
   const createId = deps.createId ?? defaultCreateId
   const now = deps.now ?? Date.now
 

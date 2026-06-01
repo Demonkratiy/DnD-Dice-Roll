@@ -1,8 +1,10 @@
 /**
  * RollControls — настройки текущего броска:
- *  - количество кубиков;
+ *  - количество кубиков (для обычных кубиков, кроме d20);
  *  - модификатор (+/−);
- *  - режим преимущество/обычный/помеха (показывается только для d20).
+ *  - для d20 — единый переключатель «помеха · обычный · преимущество · эльфийская
+ *    меткость». Он одновременно задаёт режим и размер пула костей, поэтому
+ *    отдельный счётчик количества для d20 не нужен.
  */
 
 import { Stepper, Segmented } from '@shared/ui'
@@ -22,6 +24,29 @@ export interface RollControlsProps {
   maxCount?: number
 }
 
+/**
+ * Варианты броска d20. Каждый — это пара (режим, размер пула):
+ *  - помеха: 2 кости, берём меньшую;
+ *  - обычный: 1 кость;
+ *  - преимущество: 2 кости, берём большую;
+ *  - эльфийская меткость: 3 кости, берём большую.
+ */
+type D20Option = 'disadvantage' | 'normal' | 'advantage' | 'elven'
+
+const D20_VARIANTS: Record<D20Option, { mode: RollMode; count: number }> = {
+  disadvantage: { mode: 'disadvantage', count: 2 },
+  normal: { mode: 'normal', count: 1 },
+  advantage: { mode: 'advantage', count: 2 },
+  elven: { mode: 'advantage', count: 3 },
+}
+
+/** Сводит текущие (режим, количество) к выбранному варианту d20. */
+function toD20Option(mode: RollMode, count: number): D20Option {
+  if (mode === 'disadvantage') return 'disadvantage'
+  if (mode === 'advantage') return count >= 3 ? 'elven' : 'advantage'
+  return 'normal'
+}
+
 export function RollControls({
   die,
   count,
@@ -33,15 +58,26 @@ export function RollControls({
   maxCount = 12,
 }: RollControlsProps) {
   const t = useT()
-  const modeOptions: { value: RollMode; label: string }[] = [
+  const isD20 = die === 'd20'
+
+  const d20Options: { value: D20Option; label: string }[] = [
     { value: 'disadvantage', label: t.rollControls.modeDisadvantage },
     { value: 'normal', label: t.rollControls.modeNormal },
     { value: 'advantage', label: t.rollControls.modeAdvantage },
+    { value: 'elven', label: t.rollControls.modeElven },
   ]
+
+  const handleD20Change = (option: D20Option) => {
+    const variant = D20_VARIANTS[option]
+    onModeChange(variant.mode)
+    onCountChange(variant.count)
+  }
 
   return (
     <div className={styles.controls}>
-      <Stepper label={t.rollControls.count} value={count} min={1} max={maxCount} onChange={onCountChange} />
+      {!isD20 && (
+        <Stepper label={t.rollControls.count} value={count} min={1} max={maxCount} onChange={onCountChange} />
+      )}
       <Stepper
         label={t.rollControls.modifier}
         value={modifier}
@@ -50,9 +86,14 @@ export function RollControls({
         onChange={onModifierChange}
         format={(v) => (v > 0 ? `+${v}` : `${v}`)}
       />
-      {die === 'd20' && (
+      {isD20 && (
         <div className={styles.mode}>
-          <Segmented label={t.rollControls.modeAria} options={modeOptions} value={mode} onChange={onModeChange} />
+          <Segmented
+            label={t.rollControls.modeAria}
+            options={d20Options}
+            value={toD20Option(mode, count)}
+            onChange={handleD20Change}
+          />
         </div>
       )}
     </div>

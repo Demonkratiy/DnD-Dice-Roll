@@ -28,12 +28,14 @@ export interface StageProps {
 interface ViewDie {
   value: number | null
   frameIndex: number
+  /** Отброшенная кость пула (проигравший бросок при adv/dis) — рисуем приглушённо. */
+  isDropped: boolean
 }
 
 export function Stage({ request, rollSource, reducedMotion, onResult, classId }: StageProps) {
   const { lang } = useLanguage()
   const t = useT()
-  const { animation, isPressing, intensity, handlers, lastResult, isRolling } = useStageRoll({
+  const { animation, isPressing, intensity, handlers, lastResult, isRolling, droppedFlags } = useStageRoll({
     request,
     rollSource,
     reducedMotion,
@@ -99,21 +101,36 @@ export function Stage({ request, rollSource, reducedMotion, onResult, classId }:
   }
 
   // Что рисуем: кадры анимации либо «покоящиеся» кубики с максимумом номинала.
+  // При adv/dis анимация несёт весь пул (порядок перемешан в хуке). Отметку «отброшенная»
+  // берём из droppedFlags по позиции. Приглушаем проигравших начиная с фазы reveal
+  // (когда «расчёт» завершён) и оставляем затенёнными после неё — но НЕ во время
+  // scramble/settle, чтобы не выдавать победителя раньше времени.
+  const dimLosers = animation.phase !== 'scramble' && animation.phase !== 'settle'
   const viewDice: ViewDie[] = useMemo(() => {
     if (animation.dice.length > 0) {
-      return animation.dice.map((d) => ({ value: d.value, frameIndex: d.frameIndex }))
+      return animation.dice.map((d, index) => ({
+        value: d.value,
+        frameIndex: d.frameIndex,
+        isDropped: droppedFlags[index] === true,
+      }))
     }
     // До броска показываем максимальное значение кубика (число граней).
     const maxValue = getDieSides(request.die)
-    return Array.from({ length: request.count }, () => ({ value: maxValue, frameIndex: 0 }))
-  }, [animation.dice, request.count, request.die])
+    return Array.from({ length: request.count }, () => ({
+      value: maxValue,
+      frameIndex: 0,
+      isDropped: false,
+    }))
+  }, [animation.dice, request.count, request.die, droppedFlags])
 
-  const getEmphasis = (value: number | null): DieEmphasis => {
+  const getEmphasis = (value: number | null, isDropped: boolean): DieEmphasis => {
     const revealing = animation.phase === 'reveal' || animation.phase === 'settle'
-    if (revealing && request.die === 'd20' && value === 20) {
+    // Крит подсвечиваем только у учитываемой кости — проигравший натуральный 20/1
+    // не должен вспыхивать цветом крита.
+    if (revealing && !isDropped && request.die === 'd20' && value === 20) {
       return 'critSuccess'
     }
-    if (revealing && request.die === 'd20' && value === 1) {
+    if (revealing && !isDropped && request.die === 'd20' && value === 1) {
       return 'critFail'
     }
     if (animation.phase === 'scramble') {
@@ -147,9 +164,11 @@ export function Stage({ request, rollSource, reducedMotion, onResult, classId }:
             die={request.die}
             value={d.value}
             frameIndex={d.frameIndex}
-            emphasis={getEmphasis(d.value)}
+            emphasis={getEmphasis(d.value, d.isDropped)}
             size={dieSize}
-            className={isPressing ? styles.jitter : reducedMotion ? undefined : styles.glow}
+            className={`${isPressing ? styles.jitter : reducedMotion ? '' : styles.glow} ${
+              d.isDropped && dimLosers ? styles.droppedDie : ''
+            }`.trim()}
           />
         ))}
       </div>
@@ -166,7 +185,7 @@ export function Stage({ request, rollSource, reducedMotion, onResult, classId }:
             ) : null}
             <span className={styles.resultLabel}>{t.stage.resultLabel}</span>
             {lastResult.total}
-            {request.count > 1 || request.modifier !== 0 ? (
+            {lastResult.dice.length > 1 || request.modifier !== 0 ? (
               <span className={styles.breakdown}>
                 {lastResult.dice.map((r) => r.value).join(' + ')}
                 {request.modifier !== 0
