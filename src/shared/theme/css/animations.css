@@ -47,11 +47,9 @@
   }
 }
 
-/* Огонь (ember, crimson): мягкое колыхание камина — плавно, без резких вспышек.
+/* Огонь (ember): мягкое колыхание камина — плавно, без резких вспышек.
  * Помимо радиуса «дышит» и оттенок: на пике жара цвет уходит к --accent-secondary
- * (угли разгораются), на спаде возвращается к базовому --accent. Цвета берутся из
- * токенов, поэтому ember (оранжевый↔розово-красный) и crimson (красный↔светлее)
- * получают разный характер от одной анимации. */
+ * (угли разгораются), на спаде возвращается к базовому --accent. */
 @keyframes glow-fire {
   0%,
   100% {
@@ -69,6 +67,44 @@
       0 0 54px color-mix(in srgb,
         color-mix(in srgb, var(--accent) 75%, var(--accent-secondary)) calc(var(--stage-glow) * 1.08),
         transparent);
+  }
+}
+
+/* Кровь (crimson): ровное плотное «дыхание» живого организма. Не пульс-моргание,
+ * а медленное наполнение: на вдохе свечение густеет и теплеет (радиус и яркость
+ * плавно растут, оттенок чуть уходит к артериальному --accent-secondary), на
+ * выдохе так же плавно опадает к тёмному венозному --accent. Вдох до ~33% цикла,
+ * выдох (33→100%) вдвое длиннее вдоха — затухание мягче вдоха. Синхронно с
+ * breath-crimson (то же время и пик) — свет густеет ровно тогда, когда сцена
+ * расширяется: единый вдох всем телом. Кубик при этом наливается кровью —
+ * см. die-bleed (тот же ритм). */
+@keyframes glow-crimson {
+  0%,
+  100% {
+    box-shadow: var(--shadow),
+      0 0 38px color-mix(in srgb, var(--accent) calc(var(--stage-glow) * 0.72), transparent);
+  }
+  33.3% {
+    box-shadow: var(--shadow),
+      0 0 120px color-mix(in srgb,
+        color-mix(in srgb, var(--accent) 70%, var(--accent-secondary)) calc(var(--stage-glow) * 2.1),
+        transparent);
+  }
+}
+
+/* Кровь (crimson): кубик на сцене «питается кровью» в такт дыханию — заливка
+ * силуэта (.shape) на вдохе наливается алым (--die-fill смешивается с --accent),
+ * на выдохе возвращается к чистой заливке. Тот же ритм и пик (33.3%), что у
+ * glow-crimson/breath-crimson. Применяется ТОЛЬКО к сценовому кубику: токен
+ * --die-fill-pulse «вооружается» классом .glow (см. Stage.module.css) и
+ * наследуется в .shape; кубики ленты выбора не затрагиваются. */
+@keyframes die-bleed {
+  0%,
+  100% {
+    fill: var(--die-fill);
+  }
+  33.3% {
+    fill: color-mix(in srgb, var(--accent) 22%, var(--die-fill));
   }
 }
 
@@ -156,7 +192,7 @@
  * Гасится вместе с прочими анимациями (.still / prefers-reduced-motion / .shaking).
  * ======================================================================== */
 
-/* Огонь (ember, crimson): лёгкое восходящее дрожание горячего воздуха. */
+/* Огонь (ember): лёгкое восходящее дрожание горячего воздуха. */
 @keyframes drift-fire {
   0%,
   100% {
@@ -164,7 +200,7 @@
     rotate: -0.3deg;
   }
   50% {
-    translate: 0 -4px;
+    translate: 0 -8px;
     rotate: 0.3deg;
   }
 }
@@ -208,6 +244,23 @@
   }
 }
 
+/* Кровь (crimson): «дыхание» живого организма — сцена ровно и плотно расширяется
+ * на вдохе и опадает на выдохе. Работает на индивидуальном свойстве `scale`
+ * (НЕ transform), поэтому не конфликтует ни с тряской при зажатии (tray-shake,
+ * на transform), ни с другими дрейфами (на translate/rotate). Симметричный
+ * ease-in-out, синхронно с glow-crimson (то же время) — на вдохе сцена крупнеет
+ * И свет густеет одновременно, давая ощущение наполнения тела. Амплитуда заметная
+ * (~3.5%), чтобы расширение читалось как живое дыхание, но без «зума». */
+@keyframes breath-crimson {
+  0%,
+  100% {
+    scale: 0.997;
+  }
+  33.3% {
+    scale: 1.007;
+  }
+}
+
 /* Свет (radiant): восход — направленное вверх и в стороны зарево.
  * Помимо ровного «дыхания» добавлены направленные тени: вверх (-Y) и вбок
  * (±X) с большим радиусом, создающие ареол восходящего солнца. Divine-силы. */
@@ -229,17 +282,127 @@
   }
 }
 
-/* Магия (arcane): мистическое переливание цвета фиолетовый↔голубой.
- * Цвета заданы явно — смысл темы в смене оттенка магической энергии. */
+/* Магия (arcane): мистическая циркуляция энергии по сцене.
+ *
+ * Раньше было две голубые «искры» строго на 180° — из-за прямоугольной формы
+ * трея box-shadow читался как два прямоугольника-противовеса, кружащихся по
+ * кругу. Здесь характер другой: «дышащая» фиолетовая база силы магии + ТРИ
+ * мягких ауры в единой гамме арканы (циан → фиолет → пурпур), орбитящих по
+ * периметру и разнесённых АСИММЕТРИЧНО (0° / 135° / 270°). Асимметрия + три
+ * источника + сильное размытие (64px при малом смещении ~22px) убирают
+ * ощущение «двух коробок»: получается переливающаяся, таинственная энергия,
+ * а не вращающиеся фигуры.
+ *
+ * Орбита: смещение `x y` у box-shadow двигает свечение в сторону; гоняя (x, y)
+ * по окружности (R,0 → 0,R → -R,0 → 0,-R), получаем ауру, обегающую контур.
+ * Три ауры используют одну сетку из 8 направлений со сдвигом на 3 и 6 шагов.
+ * База параллельно мягко «дышит» (радиус 48→58px) — ощущение копящейся силы.
+ * Цвета вынесены в токены палитры (--arc-base/--arc-1/--arc-2/--arc-3 в
+ * palettes.css): чтобы перекрасить тему, правим 4 строки там, а не каждый кадр. */
 @keyframes glow-arcane {
   0%,
   100% {
     box-shadow: var(--shadow),
-      0 0 50px color-mix(in srgb, #a855f7 calc(var(--stage-glow) * 1), transparent);
+      0 0 54px color-mix(in srgb, var(--arc-base) calc(var(--stage-glow) * 1.35), transparent),
+      22px 0 64px color-mix(in srgb, var(--arc-1) calc(var(--stage-glow) * var(--arc-1-i)), transparent),
+      -16px 16px 64px color-mix(in srgb, var(--arc-2) calc(var(--stage-glow) * var(--arc-2-i)), transparent),
+      0 -22px 64px color-mix(in srgb, var(--arc-3) calc(var(--stage-glow) * var(--arc-3-i)), transparent);
+  }
+  12.5% {
+    box-shadow: var(--shadow),
+      0 0 57px color-mix(in srgb, var(--arc-base) calc(var(--stage-glow) * 1.42), transparent),
+      16px 16px 64px color-mix(in srgb, var(--arc-1) calc(var(--stage-glow) * var(--arc-1-i)), transparent),
+      -22px 0 64px color-mix(in srgb, var(--arc-2) calc(var(--stage-glow) * var(--arc-2-i)), transparent),
+      16px -16px 64px color-mix(in srgb, var(--arc-3) calc(var(--stage-glow) * var(--arc-3-i)), transparent);
+  }
+  25% {
+    box-shadow: var(--shadow),
+      0 0 61px color-mix(in srgb, var(--arc-base) calc(var(--stage-glow) * 1.5), transparent),
+      0 22px 64px color-mix(in srgb, var(--arc-1) calc(var(--stage-glow) * var(--arc-1-i)), transparent),
+      -16px -16px 64px color-mix(in srgb, var(--arc-2) calc(var(--stage-glow) * var(--arc-2-i)), transparent),
+      22px 0 64px color-mix(in srgb, var(--arc-3) calc(var(--stage-glow) * var(--arc-3-i)), transparent);
+  }
+  37.5% {
+    box-shadow: var(--shadow),
+      0 0 63px color-mix(in srgb, var(--arc-base) calc(var(--stage-glow) * 1.55), transparent),
+      -16px 16px 64px color-mix(in srgb, var(--arc-1) calc(var(--stage-glow) * var(--arc-1-i)), transparent),
+      0 -22px 64px color-mix(in srgb, var(--arc-2) calc(var(--stage-glow) * var(--arc-2-i)), transparent),
+      16px 16px 64px color-mix(in srgb, var(--arc-3) calc(var(--stage-glow) * var(--arc-3-i)), transparent);
   }
   50% {
     box-shadow: var(--shadow),
-      0 0 70px color-mix(in srgb, #38bdf8 calc(var(--stage-glow) * 1.4), transparent);
+      0 0 64px color-mix(in srgb, var(--arc-base) calc(var(--stage-glow) * 1.58), transparent),
+      -22px 0 64px color-mix(in srgb, var(--arc-1) calc(var(--stage-glow) * var(--arc-1-i)), transparent),
+      16px -16px 64px color-mix(in srgb, var(--arc-2) calc(var(--stage-glow) * var(--arc-2-i)), transparent),
+      0 22px 64px color-mix(in srgb, var(--arc-3) calc(var(--stage-glow) * var(--arc-3-i)), transparent);
+  }
+  62.5% {
+    box-shadow: var(--shadow),
+      0 0 61px color-mix(in srgb, var(--arc-base) calc(var(--stage-glow) * 1.51), transparent),
+      -16px -16px 64px color-mix(in srgb, var(--arc-1) calc(var(--stage-glow) * var(--arc-1-i)), transparent),
+      22px 0 64px color-mix(in srgb, var(--arc-2) calc(var(--stage-glow) * var(--arc-2-i)), transparent),
+      -16px 16px 64px color-mix(in srgb, var(--arc-3) calc(var(--stage-glow) * var(--arc-3-i)), transparent);
+  }
+  75% {
+    box-shadow: var(--shadow),
+      0 0 57px color-mix(in srgb, var(--arc-base) calc(var(--stage-glow) * 1.43), transparent),
+      0 -22px 64px color-mix(in srgb, var(--arc-1) calc(var(--stage-glow) * var(--arc-1-i)), transparent),
+      16px 16px 64px color-mix(in srgb, var(--arc-2) calc(var(--stage-glow) * var(--arc-2-i)), transparent),
+      -22px 0 64px color-mix(in srgb, var(--arc-3) calc(var(--stage-glow) * var(--arc-3-i)), transparent);
+  }
+  87.5% {
+    box-shadow: var(--shadow),
+      0 0 55px color-mix(in srgb, var(--arc-base) calc(var(--stage-glow) * 1.37), transparent),
+      16px -16px 64px color-mix(in srgb, var(--arc-1) calc(var(--stage-glow) * var(--arc-1-i)), transparent),
+      0 22px 64px color-mix(in srgb, var(--arc-2) calc(var(--stage-glow) * var(--arc-2-i)), transparent),
+      -16px -16px 64px color-mix(in srgb, var(--arc-3) calc(var(--stage-glow) * var(--arc-3-i)), transparent);
+  }
+}
+
+/* Орбита голубого квадрата-искры по периметру сцены.
+ *
+ * Маркер — маленький квадрат (его форма мала, поэтому свечение читается точечно,
+ * а не плоскостью всего трея). Движение задано через left/top в процентах от
+ * трея — надёжно во всех движках. Восемь опорных точек описывают периметр
+ * прямоугольника со скруглёнными углами: середины сторон (3%/97%, 6%/94%) и углы
+ * (~12%/88%). Сам квадрат центрируется постоянным translate(-50%, -50%) в стилях,
+ * поэтому здесь двигаем только left/top. */
+@keyframes arcane-orbit {
+  0% {
+    left: 70%;
+    top: 50%;
+  }
+  12.5% {
+    left: 64%;
+    top: 64%;
+  }
+  25% {
+    left: 50%;
+    top: 70%;
+  }
+  37.5% {
+    left: 36%;
+    top: 64%;
+  }
+  50% {
+    left: 30%;
+    top: 50%;
+  }
+  62.5% {
+    left: 36%;
+    top: 36%;
+  }
+  75% {
+    left: 50%;
+    top: 30%;
+  }
+  87.5% {
+    left: 64%;
+    top: 36%;
+  }
+  100% {
+    left: 70%;
+    top: 50%;
   }
 }
 

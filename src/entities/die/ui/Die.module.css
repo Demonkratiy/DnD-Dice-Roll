@@ -11,6 +11,9 @@
   fill: var(--die-fill);
   stroke: var(--die-stroke);
   stroke-width: var(--die-stroke-width);
+  /* Заливка «кровью» в такт дыханию сцены — только на сценовом кубике: токен
+   * --die-fill-pulse вооружается классом .glow (crimson). По умолчанию none. */
+  animation: var(--die-fill-pulse, none);
 }
 
 .value {
@@ -81,6 +84,10 @@
   }
 
   .reveal {
+    animation: none;
+  }
+
+  .shape {
     animation: none;
   }
 }

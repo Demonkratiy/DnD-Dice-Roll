@@ -20,6 +20,9 @@
   border-radius: 24px;
   background: var(--surface);
   border: 1px solid var(--border);
+  /* position: relative — точка отсчёта для бегущих по периметру овалов-аур
+   * (псевдоэлементы ::before/::after, см. ниже), позиционируемых через left/top. */
+  position: relative;
   /* Базовое мягкое свечение акцентом + обычная тень.
    * Сила свечения (--stage-glow) задаётся стилем: на тёмном неоне ярче.
    * Базовый радиус — --stage-shadow-radius (связан с радиусом в .shaking). */
@@ -40,6 +43,65 @@
 .tray:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
+}
+
+/* Голубой овал-аура, бегущий по периметру сцены — опциональный слой
+ * эмоции (сейчас только аркана). Это НЕ чёткая фигура: овал уведён ЗА трей
+ * (z-index: -1) и сильно размыт (filter: blur), поэтому над непрозрачной
+ * поверхностью трея он не виден, а наружу выходит мягким голубым свечением —
+ * становясь четвёртым участником «танца» аур glow-arcane, только подвижным:
+ * он бежит по периметру (keyframes arcane-orbit двигают left/top в % от трея).
+ *
+ * Слой включается палитрой через токен --stage-spark-display (по умолчанию
+ * none — см. base.css), поэтому сам компонент не знает названий палитр. */
+.tray::before {
+  content: '';
+  display: var(--stage-spark-display, none);
+  position: absolute;
+  width: var(--stage-spark-size, 180px);
+  height: var(--stage-spark-height, 90px);
+  border-radius: 50%;
+  /* Старт по центру до первого кадра; орбиту задаёт arcane-orbit (left/top). */
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  /* Мягкое голубое тело: размытие превращает овал в свечение, а не фигуру. */
+  background: color-mix(in srgb, var(--stage-spark-color, #38bdf8) 70%, transparent);
+  filter: blur(28px);
+  pointer-events: none;
+  z-index: -1; /* за непрозрачным треем: видно только то, что выходит за край */
+  /* Анимация — через токен из глобального palettes.css: CSS Modules переименовал
+   * бы имя keyframes, указанное прямо здесь, а arcane-orbit глобальный. */
+  animation: var(--stage-spark-anim, none);
+}
+
+/* Второй овал-аура: ярко-фиолетовый, на той же орбите, но стартует
+ * с противоположной стороны — отрицательный animation-delay в половину
+ * цикла (animation-delay безопасен в CSS Modules). Идёт в танце с голубым. */
+.tray::after {
+  content: '';
+  display: var(--stage-spark-display, none);
+  position: absolute;
+  width: var(--stage-spark-size, 180px);
+  height: var(--stage-spark-height, 90px);
+  border-radius: 50%;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: color-mix(in srgb, var(--stage-spark-2-color, #c084fc) 70%, transparent);
+  filter: blur(28px);
+  pointer-events: none;
+  z-index: -1;
+  animation: var(--stage-spark-anim, none);
+  animation-delay: calc(var(--stage-spark-duration, 6s) / -2);
+}
+
+/* Отключённые анимации / зажатие — гасим овалы-ауры вместе с прочей «эмоцией». */
+.still::before,
+.still::after,
+.shaking::before,
+.shaking::after {
+  display: none;
 }
 
 /* Отключённые анимации (опция настроек / prefers-reduced-motion):
@@ -67,6 +129,10 @@
  * только в неоне; на flat — none). При зажатии вместо этого идёт jitter. */
 .glow {
   animation: var(--die-pulse, none);
+  /* «Вооружаем» заливку силуэта кровью только на сценовом кубике: токен
+   * наследуется вниз в .shape (см. Die.module.css). Задан только в crimson
+   * (--die-bleed), в остальных темах — none. Кубики ленты выбора не трогаем. */
+  --die-fill-pulse: var(--die-bleed, none);
 }
 
 .tray .jitter:nth-child(2n) {

@@ -17,8 +17,43 @@
   --accent-hover: #9333ea;
   --accent-contrast: #f5f3ff;
   --accent-secondary: #38bdf8;
-  /* Эмоция магии: мистическое переливание цвета фиолетовый↔голубой. */
-  --stage-pulse: glow-arcane 6s ease-in-out infinite;
+  /* Цвета свечения арканы — в одном месте (keyframes glow-arcane ссылаются на
+   * них через var(), чтобы перекрасить тему правкой 4 строк, а не каждого кадра):
+   *   --arc-base — «дышащая» фиолетовая база силы (доминанта темы);
+   *   --arc-1/2/3 — три орбитящие ауры. Чтобы фиолетовый доминировал и совпадал
+   *   с цветом кубиков, ауры держим в фиолетовой гамме: даже «голубая» искра
+   *   (--arc-1) подмешана к фиолету, а не чистый циан. */
+  --arc-base: #a855f7;
+  --arc-1: color-mix(in srgb, #38bdf8 55%, #dbcaeb);
+  --arc-2: #a78bfa;
+  --arc-3: #c084fc;
+  /* Яркость аур относительно базовой силы свечения (--stage-glow). Держим ниже
+   * базовой доминанты — чтобы фиолетовая база читалась как главный цвет, а ауры
+   * лишь «переливались» поверх. Правится здесь, один раз на все кадры. */
+  --arc-1-i: 1.15;
+  --arc-2-i: 1.05;
+  --arc-3-i: 0.95;
+  /* Эмоция магии: «дышащая» фиолетовая база силы + три мягких ауры в гамме
+   * арканы (циан/фиолет/пурпур), асимметрично орбитящие по периметру —
+   * таинственная циркуляция энергии. linear — равномерная орбита без рывков.
+   * --stage-pulse-duration — общий источник ритма: по нему дышит и кубик (см. base). */
+  --stage-pulse-duration: 5s;
+  --stage-pulse: glow-arcane var(--stage-pulse-duration) linear infinite;
+  /* …поверх неё — голубой овал-аура, бегущий ПО ПЕРИМЕТРУ сцены. Он уведён
+   * за трей и размыт (см. .tray::before), поэтому читается не фигурой, а
+   * подвижным голубым свечением — четвёртым участником «танца» аур. Здесь
+   * включаем слой и задаём цвет, размеры и скорость орбиты. */
+  --stage-spark-display: block;
+  --stage-spark-color: #38bdf8;
+  --stage-spark-size: 510px;
+  --stage-spark-height: 180px;
+  --stage-spark-duration: 6s;
+  /* Сама анимация — токеном (keyframes глобальные; так CSS Modules не
+   * переименует их имя). */
+  --stage-spark-anim: arcane-orbit var(--stage-spark-duration, 6s) linear infinite;
+  /* Второй овал-аура: яркий фиолетовый, на той же орбите, но стартует с
+   * противоположной стороны (negative delay в половину цикла). */
+  --stage-spark-2-color: #c084fc;
 }
 
 :root[data-theme-colors='charm'] {
@@ -27,7 +62,8 @@
   --accent-contrast: #2a0716;
   --accent-secondary: #fb7185;
   /* Эмоция любви: нежное «сердечное» дыхание с тёплым переливанием розовый↔коралл. */
-  --stage-pulse: glow-charm 5.5s ease-in-out infinite;
+  --stage-pulse-duration: 5.5s;
+  --stage-pulse: glow-charm var(--stage-pulse-duration) ease-in-out infinite;
 }
 
 :root[data-theme-colors='crimson'] {
@@ -35,10 +71,18 @@
   --accent-hover: #b91c1c;
   --accent-contrast: #1a0303;
   --accent-secondary: #f87171;
-  /* Эмоция крови: тяжёлое медленное колыхание (тот же камин, но мрачнее). */
-  --stage-pulse: glow-fire 4.4s ease-in-out infinite;
-  /* Микро-дрейф: то же дрожание жара, но медленнее и тяжелее. */
-  --stage-drift: drift-fire 8.5s ease-in-out infinite;
+  /* Эмоция крови = жизни: ровное плотное «дыхание» живого организма. На вдохе
+   * свечение густеет и теплеет (glow-crimson), без колыхания и вспышек. Вдох
+   * быстрый (до ~33% цикла), выдох вдвое длиннее — затухание плавнее. */
+  --stage-pulse-duration: 6.75s;
+  --stage-pulse: glow-crimson var(--stage-pulse-duration) ease-in-out infinite;
+  /* Тот же вдох — размером сцены: она едва расширяется и опадает
+   * (breath-crimson на свойстве scale). То же время, что и glow-crimson, чтобы
+   * свет и размер дышали как единое тело: наполнение на вдохе. */
+  --stage-drift: breath-crimson var(--stage-pulse-duration) ease-in-out infinite;
+  /* Кубик на сцене питается кровью в такт дыханию (die-bleed). «Вооружается»
+   * только на сценовом кубике — классом .glow (см. Stage.module.css). */
+  --die-bleed: die-bleed var(--stage-pulse-duration) ease-in-out infinite;
 }
 
 /* Darkness — особая монохромная палитра, зависящая от стиля.
@@ -52,7 +96,8 @@
   --accent-contrast: #f4f5f7;
   --accent-secondary: #6b7280;
   /* Эмоция тьмы: очень медленное спокойное «дыхание». */
-  --stage-pulse: glow-steady 6.5s ease-in-out infinite;
+  --stage-pulse-duration: 6.5s;
+  --stage-pulse: glow-steady var(--stage-pulse-duration) ease-in-out infinite;
 }
 
 :root[data-theme-shapes='neon'][data-theme-colors='darkness'] {
@@ -68,7 +113,8 @@
   --accent-contrast: #1a0e02;
   --accent-secondary: #f43f5e;
   /* Эмоция огня: мягкое колыхание камина (плавно, без резких вспышек). */
-  --stage-pulse: glow-fire 3.6s ease-in-out infinite;
+  --stage-pulse-duration: 3.6s;
+  --stage-pulse: glow-fire var(--stage-pulse-duration) ease-in-out infinite;
   /* Микро-дрейф: лёгкое «дрожание жара» — восходящий горячий воздух. */
   --stage-drift: drift-fire 7s ease-in-out infinite;
 }
@@ -79,7 +125,8 @@
   --accent-contrast: #04293a;
   --accent-secondary: #a5f3fc;
   /* Эмоция холода: медленное тягучее переливание. */
-  --stage-pulse: glow-frost 7s ease-in-out infinite;
+  --stage-pulse-duration: 7s;
+  --stage-pulse: glow-frost var(--stage-pulse-duration) ease-in-out infinite;
   /* Микро-дрейф: медленный тягучий дрейф вбок, словно иней. */
   --stage-drift: drift-frost 13s ease-in-out infinite;
 }
@@ -90,7 +137,8 @@
   --accent-contrast: #04140a;
   --accent-secondary: #eab308;
   /* Эмоция природы: сезонный сдвиг цвета лето→осень (зелёный→золото). */
-  --stage-pulse: glow-nature 10s ease-in-out infinite;
+  --stage-pulse-duration: 10s;
+  --stage-pulse: glow-nature var(--stage-pulse-duration) ease-in-out infinite;
 }
 
 :root[data-theme-colors='necrotic'] {
@@ -101,7 +149,8 @@
    * ↔ тёмно-фиолетовый, как и свечение сцены (glow-necrotic). */
   --accent-secondary: #7e22ce;
   /* Эмоция некротики: медленное зловещее перетекание призрачно-зелёный↔тёмно-фиолетовый. */
-  --stage-pulse: glow-necrotic 9s ease-in-out infinite;
+  --stage-pulse-duration: 9s;
+  --stage-pulse: glow-necrotic var(--stage-pulse-duration) ease-in-out infinite;
 }
 
 :root[data-theme-colors='radiant'] {
@@ -110,7 +159,8 @@
   --accent-contrast: #2a2200;
   --accent-secondary: #fffbe6;
   /* Эмоция divine-света: восход — ровное излучение с ареолом вверх и в стороны. */
-  --stage-pulse: glow-radiant 6s ease-in-out infinite;
+  --stage-pulse-duration: 6s;
+  --stage-pulse: glow-radiant var(--stage-pulse-duration) ease-in-out infinite;
 }
 
 :root[data-theme-colors='storm'] {
@@ -119,8 +169,9 @@
   --accent-contrast: #1a1500;
   --accent-secondary: #bae6fd;
   /* Эмоция молнии: долгое затишье с редкими затяжными разрядами и заревом вверх. */
-  --stage-pulse: glow-storm 14s linear infinite;
+  --stage-pulse-duration: 14s;
+  --stage-pulse: glow-storm var(--stage-pulse-duration) linear infinite;
   /* Микро-дрейф: затишье, затем дрожь сцены в момент вспышки. Та же длительность
-   * и timing (14s linear), что у glow-storm — обе анимации держат общую фазу. */
-  --stage-drift: drift-storm 14s linear infinite;
+   * и timing (linear), что у glow-storm — обе анимации держат общую фазу. */
+  --stage-drift: drift-storm var(--stage-pulse-duration) linear infinite;
 }

@@ -84,13 +84,19 @@ flowchart LR
 Кубик: `--die-stroke`, `--die-stroke-width`, `--die-fill`, `--die-fill-active`,
 `--die-text`, `--die-glow`, `--die-halo`, `--die-pulse` (дыхание свечения кубика
 на сцене: keyframes `die-glow-pulse` в неоне и мягче `die-glow-pulse-soft` на flat;
-гасится вместе с прочими анимациями). На flat контур `--die-stroke` — почти чёрный
-с подтоном акцента (`color-mix(... 45%, #14171d)`), чтобы силуэт был связан со свечением.
+гасится вместе с прочими анимациями). Кубик дышит **в такт сцене**: длительность
+`--die-pulse-duration` по умолчанию берётся из `--stage-pulse-duration`
+(`var(--stage-pulse-duration, 3.2s)` в base.css), а этот токен каждая палитра
+задаёт рядом со своим `--stage-pulse` и им же питает анимацию свечения сцены —
+единый источник ритма, поэтому пульс кубика и дыхание сцены всегда совпадают по
+периоду (crimson 6.75s, ember 3.6s, storm 14s и т.д.). На flat контур
+`--die-stroke` — почти чёрный с подтоном акцента (`color-mix(... 45%, #14171d)`),
+чтобы силуэт был связан со свечением.
 Сцена: `--stage-glow` — сила базового свечения сцены броска (задаётся стилем:
 на тёмном неоне ярче, чем на светлом flat); `--stage-pulse` — «характер»
 пульсации свечения (задаётся **палитрой**: огонь мерцает, холод переливается,
 молния вспыхивает и т.д.; масштабирует `--stage-glow` через keyframes
-`glow-fire`/`glow-frost`/`glow-steady`/`glow-nature`/`glow-storm`/`glow-radiant`/`glow-arcane`/`glow-necrotic`/`glow-charm`).
+`glow-fire`/`glow-frost`/`glow-steady`/`glow-nature`/`glow-storm`/`glow-radiant`/`glow-arcane`/`glow-necrotic`/`glow-charm`/`glow-crimson`).
 Часть архетипов (`glow-nature`, `glow-arcane`, `glow-necrotic`, `glow-charm`, а также `glow-fire`)
 ещё и **перекрашивают** свечение по ходу цикла — сезонный сдвиг зелёный→золото у nature,
 фиолетовый↔голубой у arcane, кислотно-зелёный↔тёмно-фиолетовый у necrotic, а у огня
@@ -100,8 +106,37 @@ flowchart LR
 (keyframes `drift-fire`/`drift-frost`/`drift-storm`), живёт на свойствах
 `translate`/`rotate` (НЕ `transform`), поэтому не конфликтует со встряской при
 зажатии и складывается с ней. У storm дрейф синхронизирован с `glow-storm`
-(одинаковые 14s linear) — дрожь сцены совпадает со вспышкой. Гасится вместе
-с `--stage-pulse` (`.still` / `prefers-reduced-motion` / `.shaking`).
+(одинаковые 14s linear) — дрожь сцены совпадает со вспышкой. У crimson этот
+слой вместо дрейфа — «дыхание» живого организма: `breath-crimson` медленно
+расширяет/сжимает сцену на свойстве `scale` (тоже не `transform`)
+**синхронно** с пульсом `glow-crimson` — то же время (`--stage-pulse-duration`
+6.75s) и тот же пик (33.3%): свет густеет ровно тогда, когда сцена расширяется,
+вдох коротким (до 33%), выдох вдвое длиннее — единый вдох всем телом. Гасится
+вместе с `--stage-pulse` (`.still` / `prefers-reduced-motion` / `.shaking`).
+
+У crimson есть и третий слой — **кубик на сцене «питается кровью»**: силуэт
+(`.shape`) наливается алым на вдохе и опадает на выдохе (keyframes `die-bleed`,
+анимирует `fill`: `--die-fill` смешивается с `--accent`), в том же ритме и пике,
+что дыхание сцены. Эффект включён **только на сценовом кубике**: палитра задаёт
+токен `--die-bleed`, который «вооружается» классом `.glow`
+([Stage.module.css](../src/features/stage/ui/Stage.module.css)) через
+`--die-fill-pulse` и наследуется вниз в `.shape`
+([Die.module.css](../src/entities/die/ui/Die.module.css)). Кубики ленты выбора
+не затрагиваются; гасится при `.shaking` (jitter) и `prefers-reduced-motion`.
+
+Аркана дополнительно несёт **орбитальный слой**: два размытых овала-ауры
+(`.tray::before` — голубой, `.tray::after` — фиолетовый), уведённых за трей
+(`z-index: -1`, `filter: blur`), бегут по периметру сцены (keyframes
+`arcane-orbit`, двигают `left`/`top` в % от трея) и читаются не фигурами, а
+подвижным свечением — «танцем» вокруг дышащих аур `glow-arcane`. Второй овал
+стартует напротив первого (`animation-delay: calc(duration / -2)`). Слой
+включается **палитрой** через токены `--stage-spark-display`
+(по умолчанию `none` в [base.css](../src/shared/theme/css/base.css)),
+`--stage-spark-color` / `--stage-spark-2-color`, `--stage-spark-size` /
+`--stage-spark-height`, `--stage-spark-duration` и `--stage-spark-anim`
+(анимация передаётся **токеном**, а не именем keyframes напрямую — иначе CSS
+Modules переименует имя; см. [animation-and-gesture](./animation-and-gesture.md)).
+Гасится вместе с прочей эмоцией на `.still` / `.shaking`.
 
 **Правило:** компоненты не используют «сырые» цвета — только токены отсюда.
 
