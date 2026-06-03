@@ -49,6 +49,7 @@ export const ru = {
     count: 'Кубики',
     modifier: 'Модификатор',
     modeAria: 'Режим броска',
+    modeLabel: 'Режим',
     modeDisadvantage: 'Помеха',
     modeNormal: 'Обычный',
     modeAdvantage: 'Преим.',

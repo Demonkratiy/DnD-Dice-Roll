@@ -47,6 +47,7 @@ export const tt: Dictionary = {
     count: 'Кубиклар',
     modifier: 'Модификатор',
     modeAria: 'Ату режимы',
+    modeLabel: 'Режим',
     modeDisadvantage: 'Комачау',
     modeNormal: 'Гадәти',
     modeAdvantage: 'Өстен.',

@@ -88,6 +88,7 @@ export function RollControls({
       />
       {isD20 && (
         <div className={styles.mode}>
+          <span className={styles.modeLabel}>{t.rollControls.modeLabel}</span>
           <WheelPicker
             label={t.rollControls.modeAria}
             options={d20Options}

@@ -14,3 +14,11 @@
   justify-content: flex-end;
   gap: 0.6rem;
 }
+
+/* Подпись «Режим» над барабаном — в одном стиле с label у Stepper. Лежит в
+ * обычном потоке: при раскрытии барабан вырастает поверх (absolute, z-index),
+ * перекрывая подпись — это ожидаемо. */
+.modeLabel {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}

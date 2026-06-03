@@ -47,6 +47,7 @@ export const sr: Dictionary = {
     count: 'Kockice',
     modifier: 'Modifikator',
     modeAria: 'Režim bacanja',
+    modeLabel: 'Režim',
     modeDisadvantage: 'Mana',
     modeNormal: 'Običan',
     modeAdvantage: 'Pred.',

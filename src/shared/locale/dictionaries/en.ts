@@ -48,6 +48,7 @@ export const en: Dictionary = {
     count: 'Dice',
     modifier: 'Modifier',
     modeAria: 'Roll mode',
+    modeLabel: 'Mode',
     modeDisadvantage: 'Disadv.',
     modeNormal: 'Normal',
     modeAdvantage: 'Adv.',
