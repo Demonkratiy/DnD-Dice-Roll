@@ -49,11 +49,30 @@ export function WheelPicker<T extends string>({
 }: WheelPickerProps<T>) {
   const groupId = useId()
   const listRef = useRef<HTMLDivElement>(null)
+  const wheelRef = useRef<HTMLDivElement>(null)
   const scrollEndTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   // Чтобы программный скролл (синхронизация по value) не порождал «эхо» onChange.
   const isSyncingRef = useRef(false)
   // Троттл-замок для прокрутки колесом мыши: один шаг за «щелчок».
   const wheelLockRef = useRef(false)
+  // Зеркало isOpen для синхронного чтения внутри обработчиков (без устаревания).
+  const openRef = useRef(false)
+  // Флаг «фокус пришёл от клика мышью»: чтобы не раскрывать барабан по фокусу при
+  // клике (иначе клик-по-выбору тут же снова бы открыл). Клавиатурный фокус —
+  // раскрывает; мышиный — нет.
+  const pointerDownRef = useRef(false)
+  // Выбор мышью делается в onPointerDown; этот флаг гасит парный onClick, чтобы
+  // не обработать тот же выбор дважды.
+  const mouseHandledRef = useRef(false)
+
+  // Раскрыт ли барабан. В покое схлопнут до одного пункта; раскрывается при
+  // наведении, клавиатурном фокусе и клике по свёрнутому барабану. Сворачивается
+  // при уводе курсора, потере фокуса и клике по выбранному пункту.
+  const [isOpen, setIsOpen] = useState(false)
+  const setOpen = useCallback((next: boolean) => {
+    openRef.current = next
+    setIsOpen(next)
+  }, [])
 
   const selectedIndex = Math.max(0, options.findIndex((option) => option.value === value))
   const [activeIndex, setActiveIndex] = useState(selectedIndex)
@@ -74,6 +93,23 @@ export function WheelPicker<T extends string>({
     }
     setActiveIndex(selectedIndex)
   }, [selectedIndex])
+
+  // При раскрытии/сворачивании барабана пере-доводим scrollTop до выбранного
+  // пункта. Подстраховка от любого остаточного сдвига при reflow (рост «рельс»),
+  // чтобы scrollTop и activeIndex не разъехались и выбор кликом был точным.
+  useEffect(() => {
+    const list = listRef.current
+    if (!list) return
+    const target = selectedIndex * ITEM_HEIGHT
+    if (Math.abs(list.scrollTop - target) > 1) {
+      isSyncingRef.current = true
+      list.scrollTop = target
+      requestAnimationFrame(() => {
+        isSyncingRef.current = false
+      })
+    }
+    setActiveIndex(selectedIndex)
+  }, [isOpen, selectedIndex])
 
   const handleScroll = useCallback(() => {
     const list = listRef.current
@@ -137,24 +173,91 @@ export function WheelPicker<T extends string>({
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === 'ArrowDown' || event.key === 'ArrowRight') {
       event.preventDefault()
+      setOpen(true)
       move(1)
     } else if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') {
       event.preventDefault()
+      setOpen(true)
       move(-1)
     }
   }
 
+  // Выбор пункта по индексу: доводим барабан до него (гасим эхо-скролл, чтобы
+  // дебаунс handleScroll не «перебил» выбор центральным пунктом), затем
+  // сворачиваем и снимаем фокус.
+  const selectIndex = (index: number) => {
+    const clamped = Math.min(options.length - 1, Math.max(0, index))
+    if (scrollEndTimer.current) {
+      clearTimeout(scrollEndTimer.current)
+      scrollEndTimer.current = null
+    }
+    const list = listRef.current
+    if (list) {
+      isSyncingRef.current = true
+      list.scrollTop = clamped * ITEM_HEIGHT
+      requestAnimationFrame(() => {
+        isSyncingRef.current = false
+      })
+    }
+    setActiveIndex(clamped)
+    onChange(options[clamped].value)
+    setOpen(false)
+    wheelRef.current?.blur()
+    pointerDownRef.current = false
+  }
+
+  // Клик мышью по барабану. Целевой пункт вычисляем геометрически — по смещению
+  // курсора от центра барабана, а НЕ по тому, какой DOM-элемент принял указатель:
+  // из-за scale() дальних пунктов и scroll-snap их хитбоксы смещаются (зазоры и
+  // перекрытия), из-за чего клик попадал в соседний пункт. Геометрия совпадает с
+  // тем, что видит пользователь. Свёрнутый барабан клик лишь раскрывает.
+  const handleBarrelMouseDown = (event: React.PointerEvent) => {
+    if (event.pointerType !== 'mouse') return
+    event.preventDefault()
+    mouseHandledRef.current = true
+    if (!openRef.current) {
+      setOpen(true)
+      return
+    }
+    const list = listRef.current
+    if (!list) return
+    const rect = list.getBoundingClientRect()
+    const centerY = rect.top + rect.height / 2
+    const offsetItems = Math.round((event.clientY - centerY) / ITEM_HEIGHT)
+    selectIndex(activeIndex + offsetItems)
+  }
+
   return (
     <div
-      className={styles.wheel}
+      className={`${styles.wheel} ${isOpen ? styles.open : ''}`}
+      ref={wheelRef}
       role="radiogroup"
       aria-label={label}
       aria-activedescendant={`${groupId}-${activeIndex}`}
       tabIndex={0}
       onKeyDown={handleKeyDown}
+      onPointerEnter={() => setOpen(true)}
+      onPointerLeave={() => {
+        pointerDownRef.current = false
+        setOpen(false)
+      }}
+      onPointerDown={() => {
+        pointerDownRef.current = true
+      }}
+      onFocus={() => {
+        // Раскрываем по фокусу только для клавиатуры; при клике мышью фокус
+        // игнорируем (раскрытием/сворачиванием управляет handleItemClick).
+        if (!pointerDownRef.current) setOpen(true)
+      }}
+      onBlur={() => setOpen(false)}
     >
       <div className={styles.barrel}>
-        <div className={styles.viewport} ref={listRef} onScroll={handleScroll}>
+        <div
+          className={styles.viewport}
+          ref={listRef}
+          onScroll={handleScroll}
+          onPointerDown={handleBarrelMouseDown}
+        >
           {/* Декоративная «рельса»: проступает только в крайних положениях, где
            * под/над лентой нет пунктов. Скроллится вместе с контентом, поэтому
            * на средних пунктах уезжает из вида. Высота = padding прежних мёртвых
@@ -177,7 +280,20 @@ export function WheelPicker<T extends string>({
                 tabIndex={-1}
                 className={`${styles.item} ${active ? styles.active : ''}`}
                 style={{ '--distance': distance } as React.CSSProperties}
-                onClick={() => onChange(option.value)}
+                onClick={() => {
+                  // Мышь обрабатывается геометрически в onPointerDown барабана —
+                  // парный click гасим, чтобы не выбрать дважды. Остаётся тач/перо
+                  // (тап по пункту) и доступность.
+                  if (mouseHandledRef.current) {
+                    mouseHandledRef.current = false
+                    return
+                  }
+                  if (!openRef.current) {
+                    setOpen(true)
+                    return
+                  }
+                  selectIndex(index)
+                }}
               >
                 {option.label}
               </button>
