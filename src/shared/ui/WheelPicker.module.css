@@ -44,7 +44,9 @@
   /* «Окно» — обрезаем сверх/снизу на --wheel-clip. Анимируем именно обрезку:
    * закрытие плавно «сводит» окно к одному пункту без reflow и subpixel-дрожи. */
   clip-path: inset(var(--wheel-clip) 0 round 12px);
-  transition: clip-path 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  /* Закрытие — длинный, очень мягкий ease-out (easeOutExpo): окно почти мгновенно
+   * трогается и долго, плавно «доезжает» до одного пункта без рывка в конце. */
+  transition: clip-path 0.6s cubic-bezier(0.16, 1, 0.3, 1);
   z-index: 1;
 }
 
