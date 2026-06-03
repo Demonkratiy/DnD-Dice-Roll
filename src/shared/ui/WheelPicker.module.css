@@ -3,12 +3,11 @@
 .wheel {
   /* Высота одного пункта; ITEM_HEIGHT в WheelPicker.tsx должен совпадать. */
   --wheel-item-height: 40px;
-  /* Сколько пунктов клиппирует «окно» барабана: 1 в покое (компактно), 3 при
-   * раскрытии. Влияет ТОЛЬКО на высоту обрезающего окна (.barrel) — сам
-   * скролл-контент (.viewport) всегда трёхпунктовый и не реформится. */
-  --wheel-visible: 1;
   /* Сколько пунктов видно в раскрытом барабане. Высота фиксированного viewport. */
   --wheel-open: 3;
+  /* На сколько обрезать «окно» сверху/снизу (clip-path inset). В покое остаётся
+   * 1 пункт по центру: (open - 1) / 2 * item = (3-1)/2*40 = 40px. Раскрыто — 0. */
+  --wheel-clip: 40px;
   position: relative;
   width: 100%;
   min-width: 160px;
@@ -19,10 +18,10 @@
   height: 2.1rem;
 }
 
-/* Раскрываемся до трёх видимых пунктов. Состоянием раскрытия управляет JS
- * (класс .open): наведение, клавиатурный фокус и клик по свёрнутому барабану. */
+/* Раскрываемся до трёх видимых пунктов: убираем обрезку окна. Состоянием
+ * раскрытия управляет JS (класс .open): наведение, клавиатурный фокус и клик. */
 .wheel.open {
-  --wheel-visible: 3;
+  --wheel-clip: 0px;
 }
 
 /* «Окно» барабана — обрезающая рамка по центру «следа». Раскрытие/сворачивание =
@@ -34,15 +33,18 @@
   right: 0;
   top: 50%;
   transform: translateY(-50%);
-  height: calc(var(--wheel-item-height) * var(--wheel-visible));
+  /* Фиксированная высота (3 пункта). Контент НЕ реформится — раскрытие меняет
+   * только clip-path, поэтому viewport никогда не сдвигается (нет дрожи) и
+   * scrollTop остаётся index * ITEM_HEIGHT (выбор кликом точен). */
+  height: calc(var(--wheel-item-height) * var(--wheel-open));
   border-radius: 12px;
   background: var(--surface);
   border: 1px solid var(--border);
   overflow: hidden;
-  /* Закрытие — медленнее и с мягким «оседанием» (ease-out quint): барабан плавно
-   * сворачивается, а не дёргается. Открытие переопределено ниже — оно быстрее,
-   * чтобы жест ощущался отзывчивым. */
-  transition: height 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+  /* «Окно» — обрезаем сверх/снизу на --wheel-clip. Анимируем именно обрезку:
+   * закрытие плавно «сводит» окно к одному пункту без reflow и subpixel-дрожи. */
+  clip-path: inset(var(--wheel-clip) 0 round 12px);
+  transition: clip-path 0.45s cubic-bezier(0.22, 1, 0.36, 1);
   z-index: 1;
 }
 
@@ -72,7 +74,7 @@
 .wheel.open .barrel {
   z-index: 5;
   /* Открытие — быстрее и снапповее закрытия (ощущение отзывчивости жеста). */
-  transition: height 0.18s cubic-bezier(0.34, 1.2, 0.64, 1);
+  transition: clip-path 0.22s cubic-bezier(0.34, 1.1, 0.64, 1);
 }
 
 .wheel:focus-visible .barrel {

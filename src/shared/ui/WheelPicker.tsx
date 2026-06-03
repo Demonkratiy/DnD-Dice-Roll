@@ -224,7 +224,11 @@ export function WheelPicker<T extends string>({
     const rect = list.getBoundingClientRect()
     const centerY = rect.top + rect.height / 2
     const offsetItems = Math.round((event.clientY - centerY) / ITEM_HEIGHT)
-    selectIndex(activeIndex + offsetItems)
+    // Центральный пункт берём из живого scrollTop (он source of truth и ставится
+    // синхронно в selectIndex), а НЕ из React-стейта activeIndex: при быстрых
+    // повторных кликах activeIndex в замыкании рендера может отставать.
+    const centerIndex = Math.round(list.scrollTop / ITEM_HEIGHT)
+    selectIndex(centerIndex + offsetItems)
   }
 
   return (
