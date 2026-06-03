@@ -51,6 +51,7 @@ export const tt: Dictionary = {
     modeNormal: 'Гадәти',
     modeAdvantage: 'Өстен.',
     modeElven: 'Эльф төзлек',
+    modeBeyond: '✦ Дөньялар артында ✦',
   },
   log: {
     title: 'Ату тарихы',

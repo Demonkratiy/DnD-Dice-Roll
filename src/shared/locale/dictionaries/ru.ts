@@ -53,6 +53,7 @@ export const ru = {
     modeNormal: 'Обычный',
     modeAdvantage: 'Преим.',
     modeElven: 'Эльф. меткость',
+    modeBeyond: '✦ За гранью миров ✦',
   },
   log: {
     title: 'История бросков',

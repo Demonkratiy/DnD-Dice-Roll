@@ -1,0 +1,139 @@
+/* WheelPicker — вертикальный барабан выбора. */
+
+.wheel {
+  /* Высота одного пункта; ITEM_HEIGHT в WheelPicker.tsx должен совпадать. */
+  --wheel-item-height: 40px;
+  /* Сколько пунктов видно: 1 в покое (компактно), 3 при фокусе/наведении. */
+  --wheel-visible: 1;
+  position: relative;
+  width: 100%;
+  min-width: 160px;
+  max-width: 220px;
+  /* «След» в потоке = высота кнопок Stepper (2.1rem). Контейнер строки выровнен
+   * по нижнему краю, поэтому при равной высоте центр барабана совпадает с центром
+   * цифры модификатора — текст пункта стоит на одной высоте с числом. */
+  height: 2.1rem;
+}
+
+/* Раскрываемся до трёх видимых пунктов, когда пользователь взаимодействует. */
+.wheel:hover,
+.wheel:focus-within,
+.wheel:focus-visible {
+  --wheel-visible: 3;
+}
+
+/* Барабан раскрывается из центра «следа» (top: 50% + перенос на половину высоты),
+ * поэтому растёт симметрично вверх и вниз, не сдвигая выбранный пункт. */
+.barrel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: calc(var(--wheel-item-height) * var(--wheel-visible));
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  transition: height 0.2s ease;
+  z-index: 1;
+}
+
+/* Декоративная «рельса» в начале/конце ленты. Занимает мёртвую зону (высота =
+ * половина «лишних» видимых пунктов), скроллится вместе с контентом и потому
+ * видна только в крайних положениях. Курсив, акцентом темы, читаемо. */
+.rail {
+  flex: none;
+  height: calc((var(--wheel-visible) - 1) / 2 * var(--wheel-item-height));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-size: 0.72rem;
+  font-style: italic;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  color: var(--accent);
+  opacity: 0.85;
+  scroll-snap-align: none;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* В раскрытом виде барабан перекрывает соседние контролы — поднимаем над ними. */
+.wheel:hover .barrel,
+.wheel:focus-within .barrel,
+.wheel:focus-visible .barrel {
+  z-index: 5;
+}
+
+.wheel:focus-visible .barrel {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.viewport {
+  height: 100%;
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+  /* Мёртвые зоны для центрирования крайних пунктов дают «рельсы» (.rail) в начале
+   * и конце ленты — они же несут декоративную фразу. Их высота равна прежнему
+   * padding-block, поэтому формула центрирования (index * ITEM_HEIGHT) в JS верна
+   * и в компактном (1), и в раскрытом (3) состоянии. */
+  /* Прячем полосу прокрутки, оставляя нативную тач-инерцию. */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.viewport::-webkit-scrollbar {
+  display: none;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: var(--wheel-item-height);
+  scroll-snap-align: center;
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  /* Дальние пункты бледнее и чуть мельче — объём барабана. */
+  opacity: calc(1 - var(--distance, 0) * 0.4);
+  transform: scale(calc(1 - var(--distance, 0) * 0.12));
+  transition: opacity 0.15s ease, transform 0.15s ease, color 0.15s ease;
+}
+
+.active {
+  color: var(--accent-contrast);
+  opacity: 1;
+}
+
+/* «Окно» барабана: подсветка центральной ячейки. */
+.selection {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: var(--wheel-item-height);
+  transform: translateY(-50%);
+  border-radius: 9px;
+  background: var(--accent-soft);
+  pointer-events: none;
+  z-index: -1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .viewport {
+    scroll-behavior: auto;
+  }
+  .item {
+    transition: none;
+  }
+}

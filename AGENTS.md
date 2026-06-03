@@ -61,7 +61,7 @@ src/
                stage (сцена), dice-picker, roll-controls, settings, log
   entities/    бизнес-сущности: die, roll, player (типы + чистая логика + model)
   shared/
-    ui/        ui-kit: Button, IconButton, Stepper, Segmented, Drawer, Switch
+    ui/        ui-kit: Button, IconButton, Stepper, Segmented, WheelPicker, Drawer, Switch
     lib/       утилиты и хуки: rng, usePressAndShake, useRollAnimation, useReducedMotion
     services/  RollSource (+ LocalRollSource, TODO RemoteRollSource), audio
     theme/     css/ (base + palettes + animations), shape/ (shapes + ShapeProvider), color/ (colors + ColorProvider)

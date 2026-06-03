@@ -2,12 +2,12 @@
  * RollControls — настройки текущего броска:
  *  - количество кубиков (для обычных кубиков, кроме d20);
  *  - модификатор (+/−);
- *  - для d20 — единый переключатель «помеха · обычный · преимущество · эльфийская
- *    меткость». Он одновременно задаёт режим и размер пула костей, поэтому
- *    отдельный счётчик количества для d20 не нужен.
+ *  - для d20 — вертикальный барабан выбора варианта «помеха · обычный ·
+ *    преимущество · эльфийская меткость». Барабан компактен по высоте и не растёт
+ *    от числа пунктов, поэтому эльфийская меткость снова живёт общим пунктом.
  */
 
-import { Stepper, Segmented } from '@shared/ui'
+import { Stepper, WheelPicker } from '@shared/ui'
 import type { DieType } from '@entities/die'
 import type { RollMode } from '@entities/roll'
 import { useT } from '@shared/locale'
@@ -88,11 +88,12 @@ export function RollControls({
       />
       {isD20 && (
         <div className={styles.mode}>
-          <Segmented
+          <WheelPicker
             label={t.rollControls.modeAria}
             options={d20Options}
             value={toD20Option(mode, count)}
             onChange={handleD20Change}
+            railLabel={t.rollControls.modeBeyond}
           />
         </div>
       )}

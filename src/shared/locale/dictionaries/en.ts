@@ -52,6 +52,7 @@ export const en: Dictionary = {
     modeNormal: 'Normal',
     modeAdvantage: 'Adv.',
     modeElven: 'Elven acc.',
+    modeBeyond: '✦ Beyond all realms ✦',
   },
   log: {
     title: 'Roll history',

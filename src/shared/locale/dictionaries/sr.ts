@@ -51,6 +51,7 @@ export const sr: Dictionary = {
     modeNormal: 'Običan',
     modeAdvantage: 'Pred.',
     modeElven: 'Vilenj. nišan',
+    modeBeyond: '✦ Iza svih svetova ✦',
   },
   log: {
     title: 'Istorija bacanja',
