@@ -28,6 +28,12 @@ build
 coverage
 .nyc_output
 
+# Playwright
+test-results
+playwright-report
+.playwright
+blob-report
+
 # Environment variables
 .env
 .env.*

@@ -6,7 +6,9 @@ import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist']),
+  // e2e/ и playwright.config — Playwright-окружение со своими глобалами;
+  // линтуется правилами Playwright отдельно, из общего React-конфига исключаем.
+  globalIgnores(['dist', 'e2e', 'playwright.config.ts']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [

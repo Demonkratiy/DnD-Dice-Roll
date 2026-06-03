@@ -77,7 +77,9 @@ src/
 
 - **React 19 + Vite + TypeScript** (strict).
 - **CSS Modules** для стилей компонентов + глобальные **CSS-переменные** для тем.
-- **Vitest** + Testing Library для тестов (домен и reducer — обязательно покрыты).
+- **Vitest** + Testing Library для юнит-тестов (домен и reducer — обязательно покрыты).
+- **Playwright** — точечные e2e на «геометрические» сценарии (`e2e/`), которые jsdom не
+  считает (layout, scroll-snap, координаты клика). Только Chromium, без перегруза.
 
 ## 6. Команды
 
@@ -89,6 +91,8 @@ npm run lint       # ESLint
 npm run typecheck  # проверка типов без эмита
 npm run test       # Vitest (однократный прогон)
 npm run test:watch # Vitest в watch-режиме
+npm run test:e2e   # Playwright e2e (сам поднимает dev-сервер)
+npm run test:e2e:ui # Playwright в UI-режиме (отладка)
 ```
 
 ## 7. Конвенции
