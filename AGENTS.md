@@ -123,6 +123,7 @@ npm run test:e2e:ui # Playwright в UI-режиме (отладка)
 | SVG-силуэты кубиков, вариации форм, FrameProvider | [`dev-wiki/dice-silhouettes.md`](./dev-wiki/dice-silhouettes.md) |
 | Персонаж (имя, класс, иконка-маркер), редактор героя | [`dev-wiki/character.md`](./dev-wiki/character.md) |
 | Локализация: переключение языка, словари, перевод реплик | [`dev-wiki/localization.md`](./dev-wiki/localization.md) |
+| Тестирование: два слоя (Vitest/jsdom и Playwright), конвенции e2e | [`dev-wiki/testing.md`](./dev-wiki/testing.md) |
 
 Если документа по теме ещё нет — создай его и добавь строку в эту таблицу и в
 `dev-wiki/README.md`.
