@@ -14,6 +14,10 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
+  // Серийно: гео-сценарии чувствительны к таймингу анимаций, а параллельная
+  // нагрузка на CPU замедляет React-апдейты и делает их флаки. Тестов мало —
+  // детерминизм важнее скорости.
+  workers: 1,
   reporter: 'list',
   use: {
     baseURL: 'http://localhost:5173',

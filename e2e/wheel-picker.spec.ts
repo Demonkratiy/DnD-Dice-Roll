@@ -26,13 +26,19 @@ async function center(wheel: Locator) {
 
 /** Раскрывает барабан наведением и кликает по пункту со смещением offset от центра. */
 async function clickOffset(page: Page, wheel: Locator, offsetItems: number) {
+  // Уводим курсор в нейтральную точку, затем наводим на барабан: так указатель
+  // гарантированно пересекает границу барабана и порождает свежий pointerenter
+  // (повторный hover из точки прошлого клика его бы не дал — барабан не раскрылся бы).
+  await page.mouse.move(0, 0)
   await wheel.hover()
-  await page.waitForTimeout(300) // дождаться раскрытия (CSS-переход высоты barrel)
+  await page.waitForTimeout(350) // дождаться раскрытия окна (clip-path → 0)
   const c = await center(wheel)
-  await page.mouse.move(c.x, c.y + offsetItems * ITEM_HEIGHT)
+  const clickY = c.y + offsetItems * ITEM_HEIGHT
+  await page.mouse.move(c.x, clickY)
   await page.mouse.down()
   await page.mouse.up()
-  await page.waitForTimeout(250)
+  // Даём барабану схлопнуться (закрытие ~0.45s) и React-стейту осесть.
+  await page.waitForTimeout(550)
 }
 
 /** Приводит барабан в детерминированное состояние — верхний пункт (Помеха). */
