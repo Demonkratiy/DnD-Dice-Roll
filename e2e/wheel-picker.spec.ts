@@ -13,9 +13,6 @@ import { test, expect, type Page, type Locator } from '@playwright/test'
 const WHEEL = '[role="radiogroup"][aria-label="Режим броска"]'
 const ITEM_HEIGHT = 40
 
-// Порядок пунктов барабана режима d20 (сверху вниз).
-const MODES = ['Помеха', 'Обычный', 'Преим.', 'Эльф. меткость']
-
 function checkedLabel(wheel: Locator) {
   return wheel.locator('[role="radio"][aria-checked="true"]').innerText()
 }
@@ -41,7 +38,10 @@ async function clickOffset(page: Page, wheel: Locator, offsetItems: number) {
 /** Приводит барабан в детерминированное состояние — верхний пункт (Помеха). */
 async function gotoTop(page: Page, wheel: Locator) {
   await wheel.focus()
-  for (let i = 0; i < MODES.length; i++) {
+  // Число шагов вверх берём из DOM (кол-во опций), а не из хардкода —
+  // так тест не сломается при добавлении/удалении режимов.
+  const optionCount = await wheel.getByRole('radio').count()
+  for (let i = 0; i < optionCount; i++) {
     await page.keyboard.press('ArrowUp')
     await page.waitForTimeout(60)
   }
