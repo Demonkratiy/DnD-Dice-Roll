@@ -21,6 +21,10 @@ export default defineConfig({
   reporter: 'list',
   use: {
     baseURL: 'http://localhost:5173',
+    // Английский — дефолтный язык приложения. Фиксируем локаль явно, иначе язык
+    // автоопределяется из navigator.languages хост-машины (см. LanguageProvider) и
+    // подписи в DOM «уплывают» — тесты, сверяющие текст, падают не по своей вине.
+    locale: 'en-US',
     trace: 'on-first-retry',
   },
   projects: [
