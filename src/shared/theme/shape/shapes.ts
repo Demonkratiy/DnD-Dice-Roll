@@ -24,22 +24,31 @@ export interface ShapeMeta {
   scheme: 'light' | 'dark'
 }
 
-/** Стиль по умолчанию (если у пользователя нет сохранённого выбора). */
-export const DEFAULT_SHAPE_ID: ShapeId = 'flat'
+/**
+ * Стиль по умолчанию (если у пользователя нет сохранённого выбора).
+ *
+ * Neon — более эффектная «витрина», поэтому именно его пользователь видит первым.
+ */
+export const DEFAULT_SHAPE_ID: ShapeId = 'neon'
 
-/** Список стилей в порядке отображения. */
+/**
+ * Список стилей в порядке отображения.
+ *
+ * Neon идёт первым и выбран стилем по умолчанию (`DEFAULT_SHAPE_ID`) как более
+ * эффектная витрина — именно его пользователь видит при первом запуске.
+ */
 export const SHAPES: readonly ShapeMeta[] = [
-  {
-    id: 'flat',
-    name: 'Flat',
-    preview: { bg: '#f4f5f7', accent: '#4f46e5', die: '#1c1f26' },
-    scheme: 'light',
-  },
   {
     id: 'neon',
     name: 'Neon',
     preview: { bg: '#0b0f1a', accent: '#22d3ee', die: '#22d3ee' },
     scheme: 'dark',
+  },
+  {
+    id: 'flat',
+    name: 'Flat',
+    preview: { bg: '#f4f5f7', accent: '#4f46e5', die: '#1c1f26' },
+    scheme: 'light',
   },
 ] as const
 

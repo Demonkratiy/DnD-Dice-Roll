@@ -65,7 +65,7 @@ flowchart LR
 | [css/animations.css](../src/shared/theme/css/animations.css) | Keyframes: свечение сцены (`glow-*`), дыхание кубика (`die-glow-pulse*`), дрейф (`drift-*`) |
 | [shape/shapes.ts](../src/shared/theme/shape/shapes.ts) | Реестр стилей: `ShapeId`, метаданные, превью, `DEFAULT_SHAPE_ID` (поле `name` — каноничный дефолт; локализованные имена — в словаре, см. ниже) |
 | [color/colors.ts](../src/shared/theme/color/colors.ts) | Реестр палитр: `ColorId`, метаданные, превью, `DEFAULT_COLOR_ID` (поле `name` — каноничный дефолт; локализованные имена — в словаре, см. ниже) |
-| [shape/ShapeProvider.tsx](../src/shared/theme/shape/ShapeProvider.tsx) | Хранит стиль, пишет `data-theme-shapes`, `localStorage` (`ddr.shape`), учитывает `prefers-color-scheme` |
+| [shape/ShapeProvider.tsx](../src/shared/theme/shape/ShapeProvider.tsx) | Хранит стиль, пишет `data-theme-shapes`, `localStorage` (`ddr.shape`); дефолт — `neon` (`DEFAULT_SHAPE_ID`), при первом запуске отдаёт `flat` только если система явно просит светлую схему (`prefers-color-scheme: light`) |
 | [shape/shapeContext.ts](../src/shared/theme/shape/shapeContext.ts) | Контекст + хук `useShape()` |
 | [color/ColorProvider.tsx](../src/shared/theme/color/ColorProvider.tsx) | Хранит палитру, пишет `data-theme-colors`, `localStorage` (`ddr.color`) |
 | [color/colorContext.ts](../src/shared/theme/color/colorContext.ts) | Контекст + хук `useColor()` |

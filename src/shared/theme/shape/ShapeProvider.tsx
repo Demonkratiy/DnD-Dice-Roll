@@ -23,8 +23,11 @@ function resolveInitialShape(): ShapeId {
     return stored
   }
 
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-  return prefersDark ? 'neon' : 'flat'
+  // Neon — дефолтная «витрина»: показываем её всем, кроме тех, у кого система
+  // явно просит светлую схему (им вежливее отдать flat). При отсутствии
+  // предпочтения новый пользователь видит именно Neon.
+  const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches
+  return prefersLight ? 'flat' : DEFAULT_SHAPE_ID
 }
 
 interface ShapeProviderProps {
