@@ -147,30 +147,40 @@ export function Stage({ request, rollSource, reducedMotion, onResult, classId }:
 
   return (
     <section className={styles.stage} aria-label={t.stage.sceneAria}>
-      <div
-        className={`${styles.tray} ${isPressing ? styles.shaking : ''} ${
-          reducedMotion ? styles.still : ''
-        }`}
-        style={{ '--shake': intensity } as React.CSSProperties}
-        role="button"
-        tabIndex={0}
-        aria-label={t.stage.trayAria}
-        aria-busy={isRolling}
-        {...handlers}
-      >
-        {viewDice.map((d, index) => (
-          <Die
-            key={index}
-            die={request.die}
-            value={d.value}
-            frameIndex={d.frameIndex}
-            emphasis={getEmphasis(d.value, d.isDropped)}
-            size={dieSize}
-            className={`${isPressing ? styles.jitter : reducedMotion ? '' : styles.glow} ${
-              d.isDropped && dimLosers ? styles.droppedDie : ''
-            }`.trim()}
-          />
-        ))}
+      {/* Обёртка-резерв держит в потоке высоту самого «высокого» расклада d20 (3
+       * кубика в две строки), а сама карточка-трей лежит внутри как absolute и
+       * прижата к НИЗУ резерва. Поэтому карточка по высоте равна своему
+       * содержимому (без пустого верха внутри) и растёт ВВЕРХ, а контролы под
+       * сценой не съезжают при смене числа кубиков. Свободное место над невысокой
+       * карточкой — прозрачное (сцена просто опущена вниз). */}
+      <div className={styles.trayReserve}>
+        <div
+          className={`${styles.tray} ${isPressing ? styles.shaking : ''} ${
+            reducedMotion ? styles.still : ''
+          }`}
+          style={{ '--shake': intensity } as React.CSSProperties}
+          role="button"
+          tabIndex={0}
+          aria-label={t.stage.trayAria}
+          aria-busy={isRolling}
+          {...handlers}
+        >
+          <div className={styles.dice}>
+            {viewDice.map((d, index) => (
+              <Die
+                key={index}
+                die={request.die}
+                value={d.value}
+                frameIndex={d.frameIndex}
+                emphasis={getEmphasis(d.value, d.isDropped)}
+                size={dieSize}
+                className={`${isPressing ? styles.jitter : reducedMotion ? '' : styles.glow} ${
+                  d.isDropped && dimLosers ? styles.droppedDie : ''
+                }`.trim()}
+              />
+            ))}
+          </div>
+        </div>
       </div>
 
       <div className={styles.readout} aria-live="polite">
