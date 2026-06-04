@@ -16,6 +16,12 @@
  * Опциональный `railLabel` — декоративная подпись в «мёртвых зонах» (крайние
  * положения), проступает только там, где под/над лентой нет пунктов.
  *
+ * Взаимодействие зависит от устройства (`pointerType`):
+ *  - мышь — раскрытие наведением (hover), выбор кликом считается геометрически;
+ *  - тач/перо — hover игнорируем (он «залипает» и приходит вместе с касанием).
+ *    Раскрытие/выбор — по тапу (на отпускании), а свайп распознаём как скролл по
+ *    сдвигу пальца и НЕ выбираем пункт, отдавая жест нативному scroll-snap.
+ *
  * Доступность: `role="radiogroup"`, стрелки ↑/↓ листают, активный пункт помечен
  * `aria-checked`, фокус-кольцо — акцентом темы.
  */
@@ -39,6 +45,9 @@ export interface WheelPickerProps<T extends string> {
 
 /** Высота одного пункта (px). Должна совпадать с --wheel-item-height в CSS. */
 const ITEM_HEIGHT = 40
+
+/** Сдвиг пальца (px), сверх которого жест считается скроллом, а не тапом. */
+const TAP_MOVE_THRESHOLD = 8
 
 export function WheelPicker<T extends string>({
   label,
@@ -64,6 +73,14 @@ export function WheelPicker<T extends string>({
   // Выбор мышью делается в onPointerDown; этот флаг гасит парный onClick, чтобы
   // не обработать тот же выбор дважды.
   const mouseHandledRef = useRef(false)
+  // Тач/перо: различаем «тап» (раскрыть/выбрать) и «свайп» (скролл). Запоминаем
+  // стартовый Y касания и факт, что палец ушёл дальше порога. Если это свайп —
+  // парный click по пункту глушим (touchHandledRef), иначе он принудительно
+  // выберет пункт под пальцем поверх того, к чему прилип scroll-snap (баг
+  // «пролистывает сразу 2»).
+  const touchStartYRef = useRef(0)
+  const touchMovedRef = useRef(false)
+  const touchHandledRef = useRef(false)
 
   // Раскрыт ли барабан. В покое схлопнут до одного пункта; раскрывается при
   // наведении, клавиатурном фокусе и клике по свёрнутому барабану. Сворачивается
@@ -231,6 +248,48 @@ export function WheelPicker<T extends string>({
     selectIndex(centerIndex + offsetItems)
   }
 
+  // Указатель опущен на барабан. Мышь идёт прежним геометрическим путём; для
+  // тача/пера лишь фиксируем старт жеста — раскрытие/выбор решаем на отпускании,
+  // когда уже известно, был это тап или свайп.
+  const handleViewportPointerDown = (event: React.PointerEvent) => {
+    if (event.pointerType === 'mouse') {
+      handleBarrelMouseDown(event)
+      return
+    }
+    touchStartYRef.current = event.clientY
+    touchMovedRef.current = false
+    touchHandledRef.current = false
+  }
+
+  // Палец поехал — за порогом считаем жест скроллом (а не тапом).
+  const handleViewportPointerMove = (event: React.PointerEvent) => {
+    if (event.pointerType === 'mouse') return
+    if (Math.abs(event.clientY - touchStartYRef.current) > TAP_MOVE_THRESHOLD) {
+      touchMovedRef.current = true
+    }
+  }
+
+  // Палец отпущен. Свайп → это скролл: выбор сделают нативный snap и дебаунс
+  // handleScroll, поэтому НИЧЕГО не выбираем (браузер после скролла click не шлёт).
+  // Тап → свёрнутый барабан раскрываем; раскрытый — выбираем пункт геометрически
+  // (та же формула, что для мыши). touchHandledRef гасит парный click по пункту.
+  const handleViewportPointerUp = (event: React.PointerEvent) => {
+    if (event.pointerType === 'mouse') return
+    if (touchMovedRef.current) return
+    touchHandledRef.current = true
+    if (!openRef.current) {
+      setOpen(true)
+      return
+    }
+    const list = listRef.current
+    if (!list) return
+    const rect = list.getBoundingClientRect()
+    const centerY = rect.top + rect.height / 2
+    const offsetItems = Math.round((event.clientY - centerY) / ITEM_HEIGHT)
+    const centerIndex = Math.round(list.scrollTop / ITEM_HEIGHT)
+    selectIndex(centerIndex + offsetItems)
+  }
+
   return (
     <div
       className={`${styles.wheel} ${isOpen ? styles.open : ''}`}
@@ -244,8 +303,15 @@ export function WheelPicker<T extends string>({
       data-open={isOpen ? 'true' : 'false'}
       tabIndex={0}
       onKeyDown={handleKeyDown}
-      onPointerEnter={() => setOpen(true)}
-      onPointerLeave={() => {
+      onPointerEnter={(event) => {
+        // Раскрытие наведением — только для мыши. На тач-устройствах «hover»
+        // приходит вместе с касанием, а pointerleave — сразу после отрыва пальца,
+        // из-за чего барабан открывался и тут же закрывался: первый тап «не
+        // срабатывал». Тачем барабан раскрывается тапом (см. handleViewportPointerUp).
+        if (event.pointerType === 'mouse') setOpen(true)
+      }}
+      onPointerLeave={(event) => {
+        if (event.pointerType !== 'mouse') return
         pointerDownRef.current = false
         setOpen(false)
       }}
@@ -264,7 +330,9 @@ export function WheelPicker<T extends string>({
           className={styles.viewport}
           ref={listRef}
           onScroll={handleScroll}
-          onPointerDown={handleBarrelMouseDown}
+          onPointerDown={handleViewportPointerDown}
+          onPointerMove={handleViewportPointerMove}
+          onPointerUp={handleViewportPointerUp}
         >
           {/* Декоративная «рельса»: проступает только в крайних положениях, где
            * под/над лентой нет пунктов. Скроллится вместе с контентом, поэтому
@@ -289,9 +357,13 @@ export function WheelPicker<T extends string>({
                 className={`${styles.item} ${active ? styles.active : ''}`}
                 style={{ '--distance': distance } as React.CSSProperties}
                 onClick={() => {
-                  // Мышь обрабатывается геометрически в onPointerDown барабана —
-                  // парный click гасим, чтобы не выбрать дважды. Остаётся тач/перо
-                  // (тап по пункту) и доступность.
+                  // И мышь (геометрия в onPointerDown), и тач/перо (тап в
+                  // onPointerUp) уже обработали выбор — парный click глушим, чтобы
+                  // не выбрать дважды. Остаётся клавиатура/доступность.
+                  if (touchHandledRef.current) {
+                    touchHandledRef.current = false
+                    return
+                  }
                   if (mouseHandledRef.current) {
                     mouseHandledRef.current = false
                     return

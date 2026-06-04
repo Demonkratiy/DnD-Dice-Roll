@@ -68,10 +68,13 @@ describe('WheelPicker', () => {
     expect(onChange).not.toHaveBeenCalled()
   })
 
-  it('тап по пункту в раскрытом барабане выбирает его', () => {
+  it('клик по пункту в раскрытом барабане выбирает его', () => {
     const { onChange } = setup({ value: 'mid' })
-    // Раскрываем барабан наведением, затем тапаем (touch — мимо мышиной геометрии).
-    fireEvent.pointerEnter(screen.getByRole('radiogroup'))
+    // Раскрываем барабан фокусом (клавиатурный путь — device-agnostic). Выбор
+    // мышью/тачем считается геометрически по координатам указателя и проверяется
+    // вживую в браузере (e2e); здесь покрываем доступный click-fallback: click
+    // по пункту в раскрытом барабане должен его выбрать.
+    fireEvent.focus(screen.getByRole('radiogroup'))
     fireEvent.click(screen.getByRole('radio', { name: 'Высокий' }))
     expect(onChange).toHaveBeenCalledWith('high')
   })
