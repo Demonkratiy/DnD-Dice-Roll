@@ -46,6 +46,17 @@ CSS-перехода `scrollTop` разъезжался с индексом вы
 - **Изоляция от Vitest.** `e2e/` исключён из Vitest ([vite.config.ts](../vite.config.ts))
   и из общего ESLint-конфига ([eslint.config.js](../eslint.config.js)) — там своя
   Playwright-среда со своими глобалами.
+- **Фиксируем локаль.** Приложение определяет язык из `navigator.languages`
+  ([LanguageProvider](../src/shared/locale/LanguageProvider.tsx)), а Chromium берёт его
+  от хоста — DOM-тексты «плавали» бы от машины к машине. Поэтому в
+  [playwright.config.ts](../playwright.config.ts) задан `locale: 'en-US'`, и e2e
+  сверяет английские подписи (`Disadv.`, `Normal`, `Adv.`, `Elven acc.`).
+- **Тач — через CDP.** У `page.touchscreen` нет свайпа; жест собираем из
+  `Input.dispatchTouchEvent` (touchStart → серия touchMove с шагом → touchEnd, без
+  «флинга»). Блок «тач-жесты» в [e2e/wheel-picker.spec.ts](../e2e/wheel-picker.spec.ts)
+  проверяет device-aware поведение барабана (первый тап раскрывает, свайп листает ровно
+  на один пункт, тап выбирает именно тот пункт) — детали в
+  [animation-and-gesture.md](./animation-and-gesture.md).
 
 ## Команды
 
