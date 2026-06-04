@@ -2,9 +2,24 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DnD Dice Roller</title>
+
+    <title>Dice 'n' Roll — D&amp;D dice roller</title>
+    <meta
+      name="description"
+      content="Dice 'n' Roll — a tactile Dungeons &amp; Dragons dice roller (d4–d100). Roll with a flick of the die, enjoy smooth animations, switchable themes and a clean, minimal interface."
+    />
+
+    <!--
+      theme-color красит UI мобильного браузера (адресная строка / статус-бар).
+      Значение синхронизируется с фактической темой в ShapeProvider (читает --bg),
+      поэтому здесь — лишь стартовый цвет под дефолтную тему Neon.
+    -->
+    <meta name="theme-color" content="#0b0f1a" />
+
+    <!-- TODO: Open Graph / Twitter Card теги (og:title, og:description, og:image 1200×630, og:url) для красивых превью при шеринге ссылки. -->
+    <!-- TODO: PWA-манифест (site.webmanifest + иконки 192/512 + apple-touch-icon), чтобы приложение можно было «установить» на телефон. -->
   </head>
   <body>
     <div id="root"></div>

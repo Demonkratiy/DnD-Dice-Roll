@@ -3,7 +3,8 @@
  *
  * Хранит выбранный стиль в state, применяет его к <html> через data-theme-shapes,
  * сохраняет выбор в localStorage и при первом запуске учитывает системную
- * настройку светлой/тёмной схемы (prefers-color-scheme).
+ * настройку светлой/тёмной схемы (prefers-color-scheme). Дополнительно держит
+ * `<meta name="theme-color">` в синхроне с фоном текущей темы (для мобильного UI).
  */
 
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
@@ -41,6 +42,20 @@ export function ShapeProvider({ children }: ShapeProviderProps) {
   useEffect(() => {
     document.documentElement.dataset.themeShapes = shapeId
     window.localStorage.setItem(STORAGE_KEY, shapeId)
+
+    // Синхронизируем <meta name="theme-color"> (цвет UI мобильного браузера) с
+    // фактическим фоном темы. Берём вычисленный `--bg` уже после смены стиля,
+    // поэтому значение всегда совпадает с тем, что видит пользователь, — и
+    // автоматически подхватит любые будущие темы без правок здесь.
+    const meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')
+    if (meta) {
+      const bg = getComputedStyle(document.documentElement)
+        .getPropertyValue('--bg')
+        .trim()
+      if (bg) {
+        meta.content = bg
+      }
+    }
   }, [shapeId])
 
   const setShape = useCallback((id: ShapeId) => {
