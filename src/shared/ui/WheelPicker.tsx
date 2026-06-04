@@ -238,6 +238,10 @@ export function WheelPicker<T extends string>({
       role="radiogroup"
       aria-label={label}
       aria-activedescendant={`${groupId}-${activeIndex}`}
+      // Реальное состояние «барабан раскрыт» наружу, чтобы соседние элементы
+      // (например подпись «Режим») могли реагировать на него через CSS :has() —
+      // НЕ через :hover/:focus, который залипает на тач-устройствах (sticky hover).
+      data-open={isOpen ? 'true' : 'false'}
       tabIndex={0}
       onKeyDown={handleKeyDown}
       onPointerEnter={() => setOpen(true)}
