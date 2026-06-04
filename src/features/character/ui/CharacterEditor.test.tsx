@@ -32,12 +32,12 @@ describe('CharacterEditor', () => {
 
   it('показывает текущее имя в поле ввода', () => {
     setup({ name: 'Гэндальф' })
-    expect(screen.getByRole('textbox', { name: 'Имя' })).toHaveValue('Гэндальф')
+    expect(screen.getByRole('textbox', { name: 'Name' })).toHaveValue('Гэндальф')
   })
 
   it('сообщает об изменении имени', () => {
     const { onNameChange } = setup()
-    fireEvent.change(screen.getByRole('textbox', { name: 'Имя' }), {
+    fireEvent.change(screen.getByRole('textbox', { name: 'Name' }), {
       target: { value: 'Радагаст' },
     })
     expect(onNameChange).toHaveBeenCalledWith('Радагаст')
@@ -45,41 +45,41 @@ describe('CharacterEditor', () => {
 
   it('Enter в поле имени закрывает окно', () => {
     const { onClose } = setup()
-    fireEvent.keyDown(screen.getByRole('textbox', { name: 'Имя' }), { key: 'Enter' })
+    fireEvent.keyDown(screen.getByRole('textbox', { name: 'Name' }), { key: 'Enter' })
     expect(onClose).toHaveBeenCalledTimes(1)
   })
 
   it('клик по классу выбирает его (без закрытия окна)', () => {
     const { onClassChange, onClose } = setup()
-    fireEvent.click(screen.getByRole('radio', { name: /Волшебник/ }))
+    fireEvent.click(screen.getByRole('radio', { name: /Wizard/ }))
     expect(onClassChange).toHaveBeenCalledWith('wizard')
     expect(onClose).not.toHaveBeenCalled()
   })
 
   it('клик по «Без класса» сбрасывает выбор', () => {
     const { onClassChange } = setup({ classId: 'wizard' })
-    fireEvent.click(screen.getByRole('radio', { name: /Без класса/ }))
+    fireEvent.click(screen.getByRole('radio', { name: /No class/ }))
     expect(onClassChange).toHaveBeenCalledWith(undefined)
   })
 
   it('Enter на классе выбирает его и закрывает окно', () => {
     const { onClassChange, onClose } = setup()
-    fireEvent.keyDown(screen.getByRole('radio', { name: /Варвар/ }), { key: 'Enter' })
+    fireEvent.keyDown(screen.getByRole('radio', { name: /Barbarian/ }), { key: 'Enter' })
     expect(onClassChange).toHaveBeenCalledWith('barbarian')
     expect(onClose).toHaveBeenCalledTimes(1)
   })
 
   it('Enter на «Без класса» сбрасывает выбор и закрывает окно', () => {
     const { onClassChange, onClose } = setup({ classId: 'wizard' })
-    fireEvent.keyDown(screen.getByRole('radio', { name: /Без класса/ }), { key: 'Enter' })
+    fireEvent.keyDown(screen.getByRole('radio', { name: /No class/ }), { key: 'Enter' })
     expect(onClassChange).toHaveBeenCalledWith(undefined)
     expect(onClose).toHaveBeenCalledTimes(1)
   })
 
   it('отмечает выбранный класс как aria-checked', () => {
     setup({ classId: 'wizard' })
-    expect(screen.getByRole('radio', { name: /Волшебник/ })).toBeChecked()
-    expect(screen.getByRole('radio', { name: /Варвар/ })).not.toBeChecked()
+    expect(screen.getByRole('radio', { name: /Wizard/ })).toBeChecked()
+    expect(screen.getByRole('radio', { name: /Barbarian/ })).not.toBeChecked()
   })
 
   it('закрывается по клику на оверлей и не закрывается по клику внутри панели', () => {
@@ -88,7 +88,7 @@ describe('CharacterEditor', () => {
     expect(onClose).not.toHaveBeenCalled()
 
     // Кнопка «Закрыть» внутри панели — явное закрытие.
-    fireEvent.click(screen.getByRole('button', { name: 'Закрыть' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }))
     expect(onClose).toHaveBeenCalledTimes(1)
   })
 })

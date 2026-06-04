@@ -7,19 +7,31 @@
  */
 
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { DEFAULT_LANGUAGE_ID, isLanguageId, type LanguageId } from './languages.ts'
+import {
+  DEFAULT_LANGUAGE_ID,
+  detectPreferredLanguage,
+  isLanguageId,
+  type LanguageId,
+} from './languages.ts'
 import { LanguageContext, type LanguageContextValue } from './languageContext.ts'
 
 const STORAGE_KEY = 'ddr.lang'
 
-/** Определяет стартовый язык: сохранённый выбор → дефолт. */
+/** Определяет стартовый язык: сохранённый выбор → язык браузера/системы → дефолт. */
 function resolveInitialLanguage(): LanguageId {
   if (typeof window === 'undefined') {
     return DEFAULT_LANGUAGE_ID
   }
 
   const stored = window.localStorage.getItem(STORAGE_KEY)
-  return isLanguageId(stored) ? stored : DEFAULT_LANGUAGE_ID
+  if (isLanguageId(stored)) {
+    return stored
+  }
+
+  // Нет сохранённого выбора — пробуем угадать по предпочтениям пользователя
+  // (`navigator.languages`, упорядочены по приоритету). Если ни один язык не
+  // поддерживается — внутри вернётся дефолтный английский.
+  return detectPreferredLanguage(window.navigator.languages)
 }
 
 interface LanguageProviderProps {

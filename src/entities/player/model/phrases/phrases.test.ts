@@ -52,8 +52,8 @@ describe('getClassPhrases', () => {
     expect(getClassPhrases('wizard', 'en')).toBe(PLAYER_PHRASES_EN.wizard)
   })
 
-  it('по умолчанию использует русский язык', () => {
-    expect(getClassPhrases('barbarian')).toBe(PLAYER_PHRASES_RU.barbarian)
+  it('по умолчанию использует английский язык', () => {
+    expect(getClassPhrases('barbarian')).toBe(PLAYER_PHRASES_EN.barbarian)
   })
 
   it('возвращает нейтральный набор, если класс не задан', () => {
