@@ -37,10 +37,32 @@
 /* Состояние перебора форм — лёгкое размытие для динамики. */
 .scramble .shape {
   opacity: 0.92;
+  /* Псевдо-вращение: силуэт доворачивается по 3D-оси Y на накопленный угол
+   * (--die-rot), а переход «дотягивает» поворот за время до следующего свапа
+   * (--die-rot-ms = текущий интервал). Так скорость кручения завязана на ту же
+   * замедляющуюся каденцию свапов: в начале бешено, к финалу — величаво. Угол и
+   * длительность задаёт useRollAnimation через контейнер .dice (переменные
+   * наследуются вниз до polygon). transform-box: fill-box + center — крутим
+   * вокруг собственного центра силуэта, а не угла viewBox. */
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: perspective(420px) rotateY(var(--die-rot, 0deg));
+  transition: transform var(--die-rot-ms, 60ms) linear;
 }
 
 .scramble .value {
-  opacity: 0.85;
+  /* Цифра крутится 1:1 с силуэтом (тот же --die-rot), «изнанку» НЕ прячем —
+   * зеркаленье на задней половине оборота просто читается как часть вращения.
+   * Само ЗНАЧЕНИЕ useRollAnimation меняет раз за оборот в скрытой фазе (180°,
+   * грань повёрнута назад), поэтому число константно в пределах оборота и не
+   * «дёргается» посреди него: новый номинал появляется уже с началом следующего
+   * оборота. transform-box: fill-box — поворот вокруг центра надписи, а не угла
+   * viewBox. */
+  opacity: 0.92;
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: perspective(420px) rotateY(var(--die-rot, 0deg));
+  transition: transform var(--die-rot-ms, 60ms) linear;
 }
 
 /* Показ результата — короткий «пульс». */

@@ -16,3 +16,16 @@ export {
 } from './usePressAndShake.ts'
 export { useReducedMotion } from './useReducedMotion.ts'
 export { useShuffleBag } from './useShuffleBag.ts'
+export {
+  getPressTier,
+  CHARGED_PRESS_INTENSITY,
+  EPIC_PRESS_INTENSITY,
+  type PressTier,
+} from './pressTier.ts'
+export {
+  SPIN_PER_TURN,
+  SPIN_SWAP_PERIOD,
+  SPIN_SWAP_PHASE,
+  MAX_SPIN_STEP,
+  spinRevealIndex,
+} from './spinReveal.ts'

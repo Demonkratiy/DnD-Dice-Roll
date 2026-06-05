@@ -54,7 +54,13 @@
   cursor: pointer;
   user-select: none;
   touch-action: none; /* чтобы зажатие не скроллило страницу */
-  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  /* ВАЖНО: box-shadow НЕ участвует в transition. При зажатии --shake обновляется
+   * каждый кадр (rAF + инлайн-стиль), а transition по box-shadow на каждом таком
+   * изменении перезапускался бы и вечно «догонял» цель — свечение отставало бы и
+   * не отражало ни рост --shake, ни дискретные ступени передач (charged/epic).
+   * Поэтому box-shadow меняется мгновенно (плавность даёт сам рост --shake), а
+   * transition оставляем только для border-color. */
+  transition: border-color 0.2s ease;
 }
 
 .tray:focus-visible {
@@ -139,14 +145,43 @@
   animation: none;
 }
 
-/* Подрагивание всей сцены при зажатии (амплитуда — от --shake 0..1). */
+/* Подрагивание всей сцены при зажатии. Свечение, амплитуда тряски и яркость
+ * растут НЕПРЕРЫВНО с --shake (0..1) — это плавный «разогон»: фазы normal и
+ * charged живут на одном этом континууме, поэтому переход 1→2 ощущается как
+ * плавное усиление (как было раньше), без резкого щелчка. Дискретный «пробой»
+ * остаётся только у эпика (см. .epic.shaking ниже). */
 .shaking {
+  /* Амплитуда тряски множится и на --shake (континуум), и на --shake-amp:
+   * базово множитель плавно растёт с зажатием, эпик добавляет резкий скачок. */
+  --shake-amp: calc(1 + var(--shake, 0) * 0.6);
   animation: tray-shake 0.12s linear infinite;
-  /* Свечение усиливается с интенсивностью зажатия (--shake 0..1). */
+  /* border-color статичен (не зависит от --shake): остаётся в transition выше,
+   * поэтому при захвате он плавно проявляется за 0.2s. Зависел бы от --shake —
+   * пер-кадровое обновление перезапускало бы transition и border «залипал» бы
+   * (та же ловушка, из-за которой box-shadow убран из transition). */
   border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
+  /* Лёгкий рост яркости/насыщенности по мере «зарядки» — тоже непрерывный. */
+  filter: brightness(calc(1 + var(--shake, 0) * 0.16)) saturate(calc(1 + var(--shake, 0) * 0.18));
   box-shadow: var(--shadow),
-    0 0 calc(var(--stage-shadow-radius) + var(--shake, 0) * 56px)
-      color-mix(in srgb, var(--accent) calc(30% + var(--shake, 0) * 45%), transparent);
+    0 0 calc(var(--stage-shadow-radius) + var(--shake, 0) * 120px)
+      color-mix(in srgb, var(--accent) calc(30% + var(--shake, 0) * 52%), transparent);
+}
+
+/* Эпический режим (особо сильное зажатие, ~3 c) — единственная ДИСКРЕТНАЯ фаза:
+ * скачком включается второй широкий ореол, тряска резко ускоряется и получает
+ * больший множитель амплитуды, ярче brightness/saturate. На фоне плавного
+ * континуума .shaking это читается как «пробой в эпик». Перекрывает .shaking →
+ * идёт ниже него в файле. */
+.epic.shaking {
+  --shake-amp: 2.3;
+  animation: tray-shake 0.08s linear infinite;
+  border-color: color-mix(in srgb, var(--accent) 95%, var(--border));
+  filter: brightness(1.34) saturate(1.45);
+  box-shadow: var(--shadow),
+    0 0 calc(var(--stage-shadow-radius) + 150px + var(--shake, 0) * 50px)
+      color-mix(in srgb, var(--accent) calc(72% + var(--shake, 0) * 28%), transparent),
+    0 0 calc(var(--stage-shadow-radius) + 240px + var(--shake, 0) * 80px)
+      color-mix(in srgb, var(--accent) calc(30% + var(--shake, 0) * 30%), transparent);
 }
 
 /* Каждый кубик дрожит чуть по-своему. */
@@ -246,13 +281,22 @@
 
 @keyframes tray-shake {
   0% {
-    transform: translate(calc(var(--shake, 0) * -2px), calc(var(--shake, 0) * 1px));
+    transform: translate(
+      calc(var(--shake, 0) * var(--shake-amp, 1) * -2px),
+      calc(var(--shake, 0) * var(--shake-amp, 1) * 1px)
+    );
   }
   50% {
-    transform: translate(calc(var(--shake, 0) * 2px), calc(var(--shake, 0) * -1px));
+    transform: translate(
+      calc(var(--shake, 0) * var(--shake-amp, 1) * 2px),
+      calc(var(--shake, 0) * var(--shake-amp, 1) * -1px)
+    );
   }
   100% {
-    transform: translate(calc(var(--shake, 0) * -1px), calc(var(--shake, 0) * 2px));
+    transform: translate(
+      calc(var(--shake, 0) * var(--shake-amp, 1) * -1px),
+      calc(var(--shake, 0) * var(--shake-amp, 1) * 2px)
+    );
   }
 }
 

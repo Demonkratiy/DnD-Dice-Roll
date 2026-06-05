@@ -14,6 +14,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   useRollAnimation,
   usePressAndShake,
+  getPressTier,
   type RollAnimationState,
   type PressAndShakeHandlers,
 } from '@shared/lib'
@@ -95,6 +96,8 @@ export function useStageRoll({
         values: pool.map((p) => p.value),
         sides: getDieSides(request.die),
         intensity,
+        // Эпик-бросок (особо сильное зажатие) → дольше вращение и медленнее хвост.
+        epic: getPressTier(intensity) === 'epic',
       })
     },
     [rollSource, request, start],

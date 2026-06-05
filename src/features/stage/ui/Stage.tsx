@@ -11,7 +11,7 @@ import { Die, getDieSides, type DieEmphasis } from '@entities/die'
 import type { RollRequest, RollResult } from '@entities/roll'
 import { getClassPhrases, type PlayerClassId } from '@entities/player'
 import type { RollSource } from '@shared/services'
-import { useShuffleBag } from '@shared/lib'
+import { useShuffleBag, getPressTier } from '@shared/lib'
 import { useLanguage, useT } from '@shared/locale'
 import { useStageRoll } from '../model/useStageRoll.ts'
 import styles from './Stage.module.css'
@@ -145,6 +145,12 @@ export function Stage({ request, rollSource, reducedMotion, onResult, classId }:
   const showTotal = lastResult != null && !isRolling && !isPressing
   const dieSize = viewDice.length > 4 ? 72 : viewDice.length > 1 ? 96 : 132
 
+  // Эпический режим — единственная ДИСКРЕТНАЯ фаза (CSS-класс .epic): при ~3 c
+  // зажатия свечение скачком «пробивается» в эпик. Фазы normal/charged живут на
+  // непрерывном континууме --shake (см. .shaking в CSS), поэтому переход 1→2
+  // плавный, без отдельного класса. Под «уменьшить движение» эпик не включаем.
+  const isEpic = isPressing && !reducedMotion && getPressTier(intensity) === 'epic'
+
   return (
     <section className={styles.stage} aria-label={t.stage.sceneAria}>
       {/* Обёртка-резерв держит в потоке высоту самого «высокого» расклада d20 (3
@@ -156,8 +162,8 @@ export function Stage({ request, rollSource, reducedMotion, onResult, classId }:
       <div className={styles.trayReserve}>
         <div
           className={`${styles.tray} ${isPressing ? styles.shaking : ''} ${
-            reducedMotion ? styles.still : ''
-          }`}
+            isEpic ? styles.epic : ''
+          } ${reducedMotion ? styles.still : ''}`}
           style={{ '--shake': intensity } as React.CSSProperties}
           role="button"
           tabIndex={0}
@@ -165,7 +171,15 @@ export function Stage({ request, rollSource, reducedMotion, onResult, classId }:
           aria-busy={isRolling}
           {...handlers}
         >
-          <div className={styles.dice}>
+          <div
+            className={styles.dice}
+            style={
+              {
+                '--die-rot': `${animation.spin ?? 0}deg`,
+                '--die-rot-ms': `${animation.spinMs ?? 0}ms`,
+              } as React.CSSProperties
+            }
+          >
             {viewDice.map((d, index) => (
               <Die
                 key={index}
