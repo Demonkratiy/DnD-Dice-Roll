@@ -11,6 +11,7 @@ import type { ClassPhrases, PhrasesByClass } from './types.ts'
 export const DEFAULT_PHRASES_EN: ClassPhrases = {
   shake: ['Shaking the dice…', 'Rattling the bones in my palms…', 'Warming up the dice with a shake…'],
   release: ['The dice are spinning… come on…', 'Rolling, waiting for the result…', 'Frozen in anticipation…'],
+  epic: ['All my strength — into this roll!', 'Something great is brewing…', 'The air rings with tension…'],
   success: ['Critical success! A twenty!', 'Natural 20 — perfect!', 'Crit! It does not get better!'],
   fail: ['Critical failure… a one.', 'Natural 1 — what rotten luck.', 'A miss! The dice let me down.'],
 }
@@ -39,6 +40,10 @@ export const PLAYER_PHRASES_EN: PhrasesByClass = {
       'They roll, and I hope for a crushing result!',
       'They fly, as the bones of my enemies will fly!',
       'They roll, and I already taste victory!',
+    ],
+    epic: [
+      'WAAAAAAAAAARGH!!!',
+      'FOR THE HOOOOORDE!!!',
     ],
     success: [
       'CRIT! ENEMIES, PRAY!',
@@ -72,6 +77,12 @@ export const PLAYER_PHRASES_EN: PhrasesByClass = {
       'They spin, and I feel the stage energy hit its peak!',
       'They fly, and I hope for an ovation!',
       'They spin, and I already savor the cheering!',
+    ],
+    epic: [
+      'They’ll sing legends of this roll!',
+      'Let the whole world hear this song!',
+      'Here comes the most dramatic moment of the ballad!',
+      'To roll or not to roll — that is the question!',
     ],
     success: [
       'Crit! The hall applauds — a twenty!',
@@ -109,6 +120,10 @@ export const PLAYER_PHRASES_EN: PhrasesByClass = {
       'They fly, and I trust the gods heard my prayer!',
       'All is the will of the Lord!',
     ],
+    epic: [
+      'Show me a miracle, Almighty!',
+      'Gods, I pay my tithe! Pretty please!',
+    ],
     success: [
       'A twenty! The heavens blessed the roll!',
       'Crit! The will of the divine is done!',
@@ -137,8 +152,9 @@ export const PLAYER_PHRASES_EN: PhrasesByClass = {
       'I freeze, listening to what the spirits say…',
       'They fly, and I already feel nature at work!',
       'They fly, and I hope for the spirits\u2019 favor!',
-    ],
-    success: [
+    ],    epic: [
+      'I AM GROOOOOOT!',
+    ],    success: [
       'Twenty! Nature itself is on my side!',
       'Crit! The spirits rejoice with me!',
       'Natural 20 — wild luck!',
@@ -167,6 +183,12 @@ export const PLAYER_PHRASES_EN: PhrasesByClass = {
       'They fly, and I already see myself crushing my foes!',
       'They fly, and I hope for a precise strike!',
     ],
+    epic: [
+      'Everything I trained for — for this strike!',
+      '…',
+      'Either I punch through this armor, or order a coffin!',
+      'THIS IS SPARTAAAAAAAA!!!',
+    ],
     success: [
       'A twenty! A strike dead on target!',
       'Crit! The training paid off!',
@@ -194,6 +216,13 @@ export const PLAYER_PHRASES_EN: PhrasesByClass = {
       'Frozen in zen, I await what the flow reveals…',
       'Ommm… the dice spin, and I am calm…',
       'Bruce Lee unleashed a thousand strikes!',
+    ],
+    epic: [
+      'All my chi gathered into this instant…',
+      'I’ve honed this strike my whole life!',
+      'Kiiiiiiiiyaaaaaaa!!!',
+      'Banzai!!!',
+      '拳必殺, Ikken HissAAAAAAAATSUUUUUUUUUUU!!!',
     ],
     success: [
       'Twenty. Flow and body — as one.',
@@ -225,6 +254,14 @@ export const PLAYER_PHRASES_EN: PhrasesByClass = {
       'I freeze: let the light judge the righteous cause…',
       'They fly — and who awaits their punishment?',
     ],
+    epic: [
+      'May the Force be with me!',
+      'Let the will of the heavens be done, and my foe shall fall!',
+      'Judgment is at hand!',
+      'Puuunishment!!!',
+      'Hold the line! The enemy must fall!',
+      'Stand to the death!!!',
+    ],
     success: [
       'A twenty! A reward for keeping my oath!',
       'Crit! Justice has triumphed!',
@@ -253,6 +290,10 @@ export const PLAYER_PHRASES_EN: PhrasesByClass = {
       'I freeze: where will they land — bullseye?',
       'They fly, and I already see myself hitting the mark!',
       'They roll, and I hope for a true result!',
+    ],
+    epic: [
+      'I’ve tracked this moment the entire hunt…',
+      'The arrow of fate on the string… I will not miss!',
     ],
     success: [
       'Twenty! Right in the bullseye!',
@@ -284,6 +325,10 @@ export const PLAYER_PHRASES_EN: PhrasesByClass = {
       'They roll, and I pray to fortune…',
       'I freeze, secretly hoping for luck…',
     ],
+    epic: [
+      'All or nothing — the greatest con of my life!',
+      'I bet everything on this roll!',
+    ],
     success: [
       'A twenty… not that I ever doubted it.',
       'Crit. Tweaked it — and no one noticed.',
@@ -313,6 +358,11 @@ export const PLAYER_PHRASES_EN: PhrasesByClass = {
       'I freeze: blood will decide — I await the outcome…',
       'They fly, and I feel their power…',
       'They spin, and I hope for a mighty result…',
+    ],
+    epic: [
+      'WILD MAGIC BURSTS OUT OF ME!',
+      'Ahahahahahaa! Magic goes BOOM!',
+      'I don’t know what’ll happen… but it’ll be MAGNIFICENT!',
     ],
     success: [
       'Twenty! Wild magic surged to the target!',
@@ -345,6 +395,12 @@ export const PLAYER_PHRASES_EN: PhrasesByClass = {
       'They spin, and I hope for its favor…',
       'I freeze, dreading its wrath in my heart…',
     ],
+    epic: [
+      'Patron, I call upon the full power of the pact!',
+      'For this roll I’m ready to pay any price!',
+      'Boss, I’ll earn it! Just give me that twenty!',
+      'Boss, if I die, the contract is void!',
+    ],
     success: [
       'Twenty! The patron is pleased with the deal.',
       'Crit! The pact has borne fruit.',
@@ -373,6 +429,11 @@ export const PLAYER_PHRASES_EN: PhrasesByClass = {
       'They fly, and I analyze their motion…',
       'They spin, and I hope for a favorable outcome…',
       'I freeze, conjectures already forming in my head…',
+    ],
+    epic: [
+      'Merlin’s beard!',
+      'The climax of all my calculations!',
+      'I’ve calculated everything! I hope…',
     ],
     success: [
       'Twenty! The probability lined up perfectly.',

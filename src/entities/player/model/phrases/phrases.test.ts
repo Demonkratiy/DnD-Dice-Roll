@@ -21,11 +21,12 @@ describe.each(SETS)('реплики ($lang)', ({ all, fallback }) => {
     expect(Object.keys(all)).toHaveLength(PLAYER_CLASSES.length)
   })
 
-  it('у каждого класса есть непустые наборы shake, release, success и fail', () => {
+  it('у каждого класса есть непустые наборы shake, release, epic, success и fail', () => {
     for (const cls of PLAYER_CLASSES) {
       const phrases = all[cls.id]
       expect(phrases.shake.length).toBeGreaterThan(0)
       expect(phrases.release.length).toBeGreaterThan(0)
+      expect(phrases.epic.length).toBeGreaterThan(0)
       expect(phrases.success.length).toBeGreaterThan(0)
       expect(phrases.fail.length).toBeGreaterThan(0)
     }
@@ -33,9 +34,10 @@ describe.each(SETS)('реплики ($lang)', ({ all, fallback }) => {
 
   it('все реплики — непустые строки', () => {
     const everything = [
-      ...Object.values(all).flatMap((p) => [...p.shake, ...p.release, ...p.success, ...p.fail]),
+      ...Object.values(all).flatMap((p) => [...p.shake, ...p.release, ...p.epic, ...p.success, ...p.fail]),
       ...fallback.shake,
       ...fallback.release,
+      ...fallback.epic,
       ...fallback.success,
       ...fallback.fail,
     ]

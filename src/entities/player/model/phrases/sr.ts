@@ -12,6 +12,7 @@ import type { ClassPhrases, PhrasesByClass } from './types.ts'
 export const DEFAULT_PHRASES_SR: ClassPhrases = {
   shake: ['Tresem kockice…', 'Zveckam koščice u dlanovima…', 'Zagrevam kockice protresanjem…'],
   release: ['Kockice se vrte… hajde…', 'Lete, čekam rezultat…', 'Ukočen u iščekivanju…'],
+  epic: ['Sva snaga — u ovo bacanje!', 'Nešto veliko se sprema…', 'Vazduh zvoni od napetosti…'],
   success: ['Kritičan uspeh! Dvadesetka!', 'Čista 20 — savršeno!', 'Krit! Bolje ne može!'],
   fail: ['Kritičan promašaj… jedinica.', 'Čista 1 — baš peh.', 'Promašaj! Kockice me izdaše.'],
 }
@@ -32,6 +33,10 @@ export const PLAYER_PHRASES_SR: PhrasesByClass = {
       'Eto ih! Hajde, plemenu, ne izneveri me!',
       'Lete, a ja već vidim kako gazim neprijatelje!',
       'Kotrljaju se, a krv mi ključa pred boj!',
+    ],
+    epic: [
+      'VAAAAAAAAARGH!!!',
+      'ZA HOOOOORDU!!!',
     ],
     success: [
       'KRIT! NEPRIJATELJI, MOLITE SE!',
@@ -58,6 +63,12 @@ export const PLAYER_PHRASES_SR: PhrasesByClass = {
       'Vrte se kao finale balade…',
       'Tiho, publiko — stiže vrhunac!',
       'Lete, a ja već vidim zadivljenu publiku!',
+    ],
+    epic: [
+      'O ovom bacanju pevaće legende!',
+      'Nek ceo svet čuje ovu pesmu!',
+      'Stiže najdramatičniji trenutak balade!',
+      'Baciti ili ne baciti — pitanje je sad!',
     ],
     success: [
       'Krit! Sala aplaudira — dvadesetka!',
@@ -86,6 +97,10 @@ export const PLAYER_PHRASES_SR: PhrasesByClass = {
       'Svevišnji, otkrij broj…',
       'Lete, a ja se uzdam da su bogovi čuli molitvu!',
     ],
+    epic: [
+      'Pokaži mi čudo, Svevišnji!',
+      'Bogovi, pa plaćam desetak! Molim vas lepo!',
+    ],
     success: [
       'Dvadesetka! Nebesa blagosloviše bacanje!',
       'Krit! Volja božanstva je ispunjena!',
@@ -112,6 +127,9 @@ export const PLAYER_PHRASES_SR: PhrasesByClass = {
       'Priroda odlučuje — čekam njenu reč…',
       'Ukočim se, oslušnem šta duhovi kažu…',
       'Lete, a ja već osećam prirodu na delu!',
+    ],
+    epic: [
+      'JA, SAM, GRUUUUUT!',
     ],
     success: [
       'Dvadeset! Sama priroda je uz mene!',
@@ -140,6 +158,12 @@ export const PLAYER_PHRASES_SR: PhrasesByClass = {
       'Stojim mirno, čekam ishod…',
       'Lete, a ja već vidim kako gazim neprijatelje!',
     ],
+    epic: [
+      'Sve čemu sam se učio — za ovaj udarac!',
+      '…',
+      'Ili probijam ovaj oklop, ili naručite sanduk!',
+      'OVO JE SPARTAAAAAAA!!!',
+    ],
     success: [
       'Dvadesetka! Udarac tačno u metu!',
       'Krit! Trening se isplatio!',
@@ -166,6 +190,13 @@ export const PLAYER_PHRASES_SR: PhrasesByClass = {
       'Ukočen u zenu, čekam šta tok otkriva…',
       'Ommm… kockice se vrte, a ja sam miran…',
       'Brus Li je oslobodio hiljadu udaraca!',
+    ],
+    epic: [
+      'Sav moj či sabran je u ovaj tren…',
+      'Ovaj udarac sam brusio ceo život!',
+      'Kiiiiiiijaaaaaa!!!',
+      'Banzai!!!',
+      '拳必殺, Iken HisAAAAAAATSUUUUUUUUUUU!!!',
     ],
     success: [
       'Dvadeset. Tok i telo — jedno su.',
@@ -194,6 +225,14 @@ export const PLAYER_PHRASES_SR: PhrasesByClass = {
       'Ukočim se: neka svetlost presudi pravednom delu…',
       'Lete — a koga čeka njihova kazna?',
     ],
+    epic: [
+      'Neka je sila sa mnom!',
+      'Neka bude volja nebesa, i neka padne moj neprijatelj!',
+      'Sad će se izvršiti sud!',
+      'Kaaazna!!!',
+      'Drž’ red! Neprijatelj mora pasti!',
+      'Stoj do smrti!!!',
+    ],
     success: [
       'Dvadesetka! Nagrada za održanu zakletvu!',
       'Krit! Pravda je pobedila!',
@@ -220,6 +259,10 @@ export const PLAYER_PHRASES_SR: PhrasesByClass = {
       'Kotrljaju se ka meti — zadržavam dah…',
       'Ukočim se: gde će pasti — u centar?',
       'Lete, a ja već vidim kako pogađam metu!',
+    ],
+    epic: [
+      'Pratim ovaj trenutak ceo lov…',
+      'Strela sudbine na tetivi… neću promašiti!',
     ],
     success: [
       'Dvadeset! Pravo u centar mete!',
@@ -248,6 +291,10 @@ export const PLAYER_PHRASES_SR: PhrasesByClass = {
       'Ukočim se u senci, čekam pravu priliku…',
       'Lete, a ja se nadam malo sreće…',
     ],
+    epic: [
+      'Sve ili ništa — najveća prevara mog života!',
+      'Stavljam sve na ovo bacanje!',
+    ],
     success: [
       'Dvadesetka… ne da sam ikad sumnjao.',
       'Krit. Nameštih — i niko ne primeti.',
@@ -274,6 +321,11 @@ export const PLAYER_PHRASES_SR: PhrasesByClass = {
       'Vrte se u vrtlogu moći… šta će pasti?',
       'Ukočim se: krv će odlučiti — čekam ishod…',
       'Lete, a ja osećam njihovu moć…',
+    ],
+    epic: [
+      'DIVLJA MAGIJA NAVIRE IZ MENE!',
+      'Aha-ha-ha-haaa! Magija pravi BUM!',
+      'Ne znam šta će biti… ali biće GRANDIOZNO!',
     ],
     success: [
       'Dvadeset! Divlja magija pogodi metu!',
@@ -302,6 +354,12 @@ export const PLAYER_PHRASES_SR: PhrasesByClass = {
       'Ukočim se: šta će mi pogodba upisati?',
       'Lete, a ja osećam njegovu moć…',
     ],
+    epic: [
+      'Pokrovitelju, prizivam punu moć pakta!',
+      'Za ovo bacanje spreman sam da platim svaku cenu!',
+      'Šefe, odradiću! Samo mi daj tu dvadesetku!',
+      'Šefe, ako umrem, ugovor se poništava!',
+    ],
     success: [
       'Dvadeset! Pokrovitelj je zadovoljan pogodbom.',
       'Krit! Pakt je urodio plodom.',
@@ -328,6 +386,11 @@ export const PLAYER_PHRASES_SR: PhrasesByClass = {
       'Vrte se po teoriji… da proverimo sada…',
       'Ukočim se: eksperiment je u toku, čekam rezultat…',
       'Lete, a ja analiziram njihovo kretanje…',
+    ],
+    epic: [
+      'Merlinove mi brade!',
+      'Vrhunac svih mojih proračuna!',
+      'Sve sam proračunao! Nadam se…',
     ],
     success: [
       'Dvadeset! Verovatnoća se savršeno poklopila.',

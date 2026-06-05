@@ -56,10 +56,12 @@ export function Stage({ request, rollSource, reducedMotion, onResult, classId }:
   const phrases = useMemo(() => getClassPhrases(classId, lang), [classId, lang])
   const nextShakePhrase = useShuffleBag(phrases.shake)
   const nextReleasePhrase = useShuffleBag(phrases.release)
+  const nextEpicPhrase = useShuffleBag(phrases.epic)
   const nextSuccessPhrase = useShuffleBag(phrases.success)
   const nextFailPhrase = useShuffleBag(phrases.fail)
   const [shakePhrase, setShakePhrase] = useState(() => nextShakePhrase())
   const [releasePhrase, setReleasePhrase] = useState(() => nextReleasePhrase())
+  const [epicPhrase, setEpicPhrase] = useState(() => nextEpicPhrase())
 
   const [wasPressing, setWasPressing] = useState(isPressing)
   if (isPressing !== wasPressing) {
@@ -159,6 +161,17 @@ export function Stage({ request, rollSource, reducedMotion, onResult, classId }:
   // плавный, без отдельного класса. Под «уменьшить движение» эпик не включаем.
   const isEpic = isPressing && !reducedMotion && getPressTier(intensity) === 'epic'
 
+  // Когда зажатие пробивается в эпик-тир, подменяем обычную реплику тряски на
+  // драматичную (`phrases.epic`). Фразу выбираем один раз на фронте входа в эпик
+  // — по тому же паттерну «корректировки состояния во время рендера».
+  const [wasEpic, setWasEpic] = useState(isEpic)
+  if (isEpic !== wasEpic) {
+    setWasEpic(isEpic)
+    if (isEpic) {
+      setEpicPhrase(nextEpicPhrase())
+    }
+  }
+
   return (
     <section className={styles.stage} aria-label={t.stage.sceneAria}>
       {/* Обёртка-резерв держит в потоке высоту самого «высокого» расклада d20 (3
@@ -228,7 +241,7 @@ export function Stage({ request, rollSource, reducedMotion, onResult, classId }:
             ) : null}
           </span>
         ) : isPressing ? (
-          <span className={styles.status}>{shakePhrase}</span>
+          <span className={styles.status}>{isEpic ? epicPhrase : shakePhrase}</span>
         ) : isRolling ? (
           <span className={styles.status}>{releasePhrase}</span>
         ) : (
