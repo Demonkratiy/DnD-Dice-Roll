@@ -30,6 +30,10 @@ interface ViewDie {
   frameIndex: number
   /** Отброшенная кость пула (проигравший бросок при adv/dis) — рисуем приглушённо. */
   isDropped: boolean
+  /** Подписанный угол поворота этого кубика (градусы) — у каждого своё направление/темп. */
+  rot: number
+  /** Длительность CSS-перехода поворота этого кубика (мс). */
+  rotMs: number
 }
 
 export function Stage({ request, rollSource, reducedMotion, onResult, classId }: StageProps) {
@@ -112,6 +116,8 @@ export function Stage({ request, rollSource, reducedMotion, onResult, classId }:
         value: d.value,
         frameIndex: d.frameIndex,
         isDropped: droppedFlags[index] === true,
+        rot: d.rot ?? 0,
+        rotMs: d.rotMs ?? 0,
       }))
     }
     // До броска показываем максимальное значение кубика (число граней).
@@ -120,6 +126,8 @@ export function Stage({ request, rollSource, reducedMotion, onResult, classId }:
       value: maxValue,
       frameIndex: 0,
       isDropped: false,
+      rot: 0,
+      rotMs: 0,
     }))
   }, [animation.dice, request.count, request.die, droppedFlags])
 
@@ -171,15 +179,10 @@ export function Stage({ request, rollSource, reducedMotion, onResult, classId }:
           aria-busy={isRolling}
           {...handlers}
         >
-          <div
-            className={styles.dice}
-            style={
-              {
-                '--die-rot': `${animation.spin ?? 0}deg`,
-                '--die-rot-ms': `${animation.spinMs ?? 0}ms`,
-              } as React.CSSProperties
-            }
-          >
+          {/* Поворот теперь ПОКУБИЧНЫЙ: у каждого своя длительность и
+           * направление, поэтому CSS-переменные угла живут на самом <Die>, а не
+           * на общем контейнере. */}
+          <div className={styles.dice}>
             {viewDice.map((d, index) => (
               <Die
                 key={index}
@@ -188,6 +191,12 @@ export function Stage({ request, rollSource, reducedMotion, onResult, classId }:
                 frameIndex={d.frameIndex}
                 emphasis={getEmphasis(d.value, d.isDropped)}
                 size={dieSize}
+                style={
+                  {
+                    '--die-rot': `${d.rot}deg`,
+                    '--die-rot-ms': `${d.rotMs}ms`,
+                  } as React.CSSProperties
+                }
                 className={`${isPressing ? styles.jitter : reducedMotion ? '' : styles.glow} ${
                   d.isDropped && dimLosers ? styles.droppedDie : ''
                 }`.trim()}

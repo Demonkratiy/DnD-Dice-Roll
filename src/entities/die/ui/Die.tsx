@@ -9,7 +9,7 @@
  * автоматически перекрашивает кубик.
  */
 
-import { useMemo } from 'react'
+import { useMemo, type CSSProperties } from 'react'
 import { getDieFrames } from './geometry.ts'
 import type { DieType } from '../model/types.ts'
 import styles from './Die.module.css'
@@ -31,6 +31,8 @@ export interface DieProps {
   size?: number
   /** Доп. класс. */
   className?: string
+  /** Инлайн-стиль (например, CSS-переменные поворота `--die-rot`/`--die-rot-ms`). */
+  style?: CSSProperties
 }
 
 export function Die({
@@ -41,6 +43,7 @@ export function Die({
   emphasis = 'idle',
   size = 96,
   className,
+  style,
 }: DieProps) {
   const frames = useMemo(() => getDieFrames(die), [die])
   const frame = frames[((frameIndex % frames.length) + frames.length) % frames.length]
@@ -57,6 +60,7 @@ export function Die({
   return (
     <svg
       className={classes}
+      style={style}
       width={size}
       height={size}
       viewBox="0 0 100 100"
