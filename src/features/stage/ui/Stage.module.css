@@ -94,6 +94,104 @@
   justify-content: center;
   gap: 1rem;
   width: 100%;
+  /* Поднимаем кубики над рунической печатью (.runeMark, z-index: 0). */
+  position: relative;
+  z-index: 1;
+}
+
+/* Рунический «след мощи»: печать под кубиком на КРИТ-исходе (нат. 20/1).
+ * Лежит между фоном трея и кубиками (z-index: 0 < .dice). Появляется и
+ * ОСТАЁТСЯ видимой (rune-appear ... forwards держит финальный кадр): слой
+ * живёт от settle через reveal и весь покой idle, пока кубик «отдыхает» на
+ * крит-результате, и размонтируется лишь с началом следующего броска (scramble).
+ * Цвет задаётся модификаторами .runeSuccess / .runeFail (через currentColor). */
+.runeMark {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: clamp(11rem, 60%, 18rem);
+  height: clamp(11rem, 60%, 18rem);
+  pointer-events: none;
+  z-index: 0;
+  color: var(--accent);
+  animation: rune-appear 0.9s ease-out forwards;
+}
+
+.runeSuccess {
+  color: var(--crit-success);
+}
+
+.runeFail {
+  color: var(--crit-fail);
+}
+
+.runeRing,
+.runeRingInner,
+.runeTick,
+.runeCrack {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+}
+
+.runeRing {
+  stroke-width: 2.5;
+  opacity: 0.9;
+}
+
+.runeRingInner {
+  stroke-width: 1.5;
+  opacity: 0.55;
+  stroke-dasharray: 6 10;
+}
+
+.runeTick {
+  stroke-width: 3;
+  opacity: 0.85;
+}
+
+.runeCrack {
+  stroke-width: 1.5;
+  opacity: 0.4;
+}
+
+@keyframes rune-appear {
+  0% {
+    opacity: 0;
+    transform: scale(0.7) rotate(-8deg);
+  }
+  55% {
+    opacity: 1;
+    transform: scale(1.05) rotate(0deg);
+  }
+  /* Финальный кадр удерживается (forwards): руна остаётся под кубиком. */
+  100% {
+    opacity: 0.75;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+/* Идея «хроматического сдвига»: на пике эпического зажатия содержимое сцены
+ * пульсирует RGB-расщеплением (красно-голубые тени-дубли разъезжаются),
+ * размытием и уводом тона (hue-rotate) — эффект «глитча мощи». Дёшево (только
+ * filter/drop-shadow), читается как энергетическое искажение вокруг кубика.
+ * Эффект самостоятельный — не конфликтует со статическим filter трея, потому
+ * что висит на отдельном слое .dice. Гасится под reduced-motion. */
+.epicDistort {
+  animation: epic-distort 0.32s ease-in-out infinite;
+}
+
+@keyframes epic-distort {
+  0%,
+  100% {
+    filter: blur(0) hue-rotate(0deg) drop-shadow(0 0 0 transparent)
+      drop-shadow(0 0 0 transparent);
+  }
+  50% {
+    filter: blur(1.4px) hue-rotate(32deg)
+      drop-shadow(-3px 0 0 rgba(255, 0, 80, 0.6))
+      drop-shadow(3px 0 0 rgba(0, 200, 255, 0.6));
+  }
 }
 
 /* Голубой овал-аура, бегущий по периметру сцены — опциональный слой
@@ -220,6 +318,51 @@
 .epic.shaking {
   --epic: 1;
   animation: tray-shake 0.08s linear infinite;
+}
+
+/* Эпические искры: слой по центру трея, из которого точки разлетаются радиально.
+ * Рендерится только в эпик-тире (компонент не монтирует его иначе и под
+ * reduced-motion). pointer-events отключены — это чистая декорация поверх сцены.
+ * Искры могут выходить за скруглённый край (overflow трея не обрезается). */
+.sparks {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Одна искра: точка акцентного цвета со свечением. Стартует в центре, по кривой
+ * разлетается вдоль своего угла (--spark-angle) на дистанцию (--spark-dist) и
+ * гаснет. rotate задаёт направление, последующий translateY уводит точку вдоль
+ * повёрнутой оси — получается радиальный разлёт. Параметры приходят инлайном из
+ * Stage.tsx (детерминированный набор), длительность общая, фазы — через delay. */
+.spark {
+  position: absolute;
+  width: var(--spark-size, 6px);
+  height: var(--spark-size, 6px);
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 80%, transparent);
+  opacity: 0;
+  animation: epic-spark 0.9s ease-out infinite;
+  animation-delay: var(--spark-delay, 0s);
+}
+
+@keyframes epic-spark {
+  0% {
+    opacity: 0;
+    transform: rotate(var(--spark-angle, 0deg)) translateY(0) scale(0.4);
+  }
+  18% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(var(--spark-angle, 0deg))
+      translateY(calc(-1 * var(--spark-dist, 110px))) scale(1);
+  }
 }
 
 /* Каждый кубик дрожит чуть по-своему. */
@@ -351,7 +494,15 @@
   .tray,
   .shaking,
   .jitter,
-  .glow {
+  .glow,
+  .epicDistort,
+  .runeMark {
     animation: none;
+  }
+
+  /* Эпические искры — чистая декорация: при reduced-motion прячем слой целиком
+   * (на случай, если он всё же отрендерен). */
+  .sparks {
+    display: none;
   }
 }

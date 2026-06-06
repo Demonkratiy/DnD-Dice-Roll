@@ -36,6 +36,29 @@ interface ViewDie {
   rotMs: number
 }
 
+/**
+ * Эпические искры — декоративные точки, разлетающиеся от центра сцены на пике
+ * зажатия (тир `epic`). Набор фиксированный и детерминированный (без Math.random):
+ * угол, дистанция, задержка и размер выводятся из индекса, чтобы искры стартовали
+ * вразнобой и слой не «дышал» одинаково. Чистая косметика — гасится при
+ * reduced-motion (искры вообще не рендерятся, см. условие isEpic).
+ */
+const EPIC_SPARKS = Array.from({ length: 14 }, (_, i) => ({
+  angle: (360 / 14) * i + (i % 3) * 9,
+  dist: 96 + (i % 4) * 24,
+  delay: (i % 7) * 0.1,
+  size: 4 + (i % 3) * 2,
+}))
+
+/**
+ * Геометрия рунического «следа мощи» — печати под кубиком на крит-исходе
+ * (натуральная 20/1). Лучи-засечки идут по кругу (12 штук), трещины расходятся от
+ * центра под смещёнными углами. Всё детерминировано (углы из индекса), сам слой —
+ * декоративный (aria-hidden) и не рендерится под reduced-motion.
+ */
+const RUNE_RAYS = Array.from({ length: 12 }, (_, i) => (360 / 12) * i)
+const RUNE_CRACKS = [18, 78, 138, 198, 258, 318]
+
 export function Stage({ request, rollSource, reducedMotion, onResult, classId }: StageProps) {
   const { lang } = useLanguage()
   const t = useT()
@@ -134,7 +157,17 @@ export function Stage({ request, rollSource, reducedMotion, onResult, classId }:
   }, [animation.dice, request.count, request.die, droppedFlags])
 
   const getEmphasis = (value: number | null, isDropped: boolean): DieEmphasis => {
-    const revealing = animation.phase === 'reveal' || animation.phase === 'settle'
+    // Крит-цвет держим не только в момент показа (settle/reveal), но и в покое
+    // (idle) — пока кубик «отдыхает» на крит-результате до следующего броска.
+    // До первого броска dice пуст (показываем грань-максимум), поэтому idle без
+    // костей НЕ подсвечиваем, иначе стартовая «20» сразу вспыхнула бы критом.
+    // При зажатии (новый бросок ещё в idle, но кости старые) крит-цвет тоже
+    // сбрасываем — синхронно с руной (`critAftermath` тоже исключает isPressing),
+    // иначе цифра оставалась бы крит-цветной всю тряску до отпускания.
+    const revealing =
+      animation.phase === 'reveal' ||
+      animation.phase === 'settle' ||
+      (animation.phase === 'idle' && animation.dice.length > 0 && !isPressing)
     // Крит подсвечиваем только у учитываемой кости — проигравший натуральный 20/1
     // не должен вспыхивать цветом крита.
     if (revealing && !isDropped && request.die === 'd20' && value === 20) {
@@ -160,6 +193,26 @@ export function Stage({ request, rollSource, reducedMotion, onResult, classId }:
   // непрерывном континууме --shake (см. .shaking в CSS), поэтому переход 1→2
   // плавный, без отдельного класса. Под «уменьшить движение» эпик не включаем.
   const isEpic = isPressing && !reducedMotion && getPressTier(intensity) === 'epic'
+
+  // Разовый «след мощи»: рунический круг под кубиком на КРИТ-исходе (натуральная
+  // 20 — успех, 1 — провал) в любом режиме броска. Крит считаем по ВИДИМОЙ кости
+  // (а не по lastResult, который во время settle ещё хранит прошлый бросок),
+  // поэтому руна точно совпадает с показанным числом. Скоупим одиночным d20
+  // (dice.length === 1: исключает adv/dis и состояние «до броска»). Во время
+  // scramble не показываем — число там случайное.
+  const displayCrit: 'success' | 'fail' | null = useMemo(() => {
+    if (request.die !== 'd20' || animation.dice.length !== 1) return null
+    if (animation.phase === 'scramble') return null
+    const value = animation.dice[0].value
+    if (value === 20) return 'success'
+    if (value === 1) return 'fail'
+    return null
+  }, [request.die, animation.dice, animation.phase])
+
+  // Руна «залипает»: появляется на крите и остаётся под кубиком до начала
+  // следующего броска (displayCrit обнуляется на scramble) или до зажатия для
+  // нового броска. Под reducedMotion не показываем — это чисто декоративная вспышка.
+  const critAftermath = !reducedMotion && displayCrit != null && !isPressing
 
   // Когда зажатие пробивается в эпик-тир, подменяем обычную реплику тряски на
   // драматичную (`phrases.epic`). Фразу выбираем один раз на фронте входа в эпик
@@ -192,10 +245,46 @@ export function Stage({ request, rollSource, reducedMotion, onResult, classId }:
           aria-busy={isRolling}
           {...handlers}
         >
+          {/* Рунический «след мощи» — разовая печать под кубиком на КРИТ-исходе
+           * (натуральная 20/1) в любом режиме. Цвет — по типу крита. */}
+          {critAftermath ? (
+            <svg
+              className={`${styles.runeMark} ${
+                displayCrit === 'success' ? styles.runeSuccess : styles.runeFail
+              }`}
+              viewBox="0 0 200 200"
+              aria-hidden="true"
+            >
+              <circle className={styles.runeRing} cx="100" cy="100" r="80" />
+              <circle className={styles.runeRingInner} cx="100" cy="100" r="58" />
+              {RUNE_RAYS.map((a) => (
+                <line
+                  key={`ray-${a}`}
+                  className={styles.runeTick}
+                  x1="100"
+                  y1="22"
+                  x2="100"
+                  y2="8"
+                  transform={`rotate(${a} 100 100)`}
+                />
+              ))}
+              {RUNE_CRACKS.map((a) => (
+                <line
+                  key={`crack-${a}`}
+                  className={styles.runeCrack}
+                  x1="100"
+                  y1="100"
+                  x2="100"
+                  y2="56"
+                  transform={`rotate(${a} 100 100)`}
+                />
+              ))}
+            </svg>
+          ) : null}
           {/* Поворот теперь ПОКУБИЧНЫЙ: у каждого своя длительность и
            * направление, поэтому CSS-переменные угла живут на самом <Die>, а не
            * на общем контейнере. */}
-          <div className={styles.dice}>
+          <div className={`${styles.dice} ${isEpic ? styles.epicDistort : ''}`.trim()}>
             {viewDice.map((d, index) => (
               <Die
                 key={index}
@@ -216,6 +305,27 @@ export function Stage({ request, rollSource, reducedMotion, onResult, classId }:
               />
             ))}
           </div>
+          {/* Эпические искры — разлетаются от центра только на пике зажатия.
+           * Чистая декорация (aria-hidden); под reduced-motion isEpic ложен, так
+           * что слой не рендерится вовсе. */}
+          {isEpic ? (
+            <div className={styles.sparks} aria-hidden="true">
+              {EPIC_SPARKS.map((s, i) => (
+                <span
+                  key={i}
+                  className={styles.spark}
+                  style={
+                    {
+                      '--spark-angle': `${s.angle}deg`,
+                      '--spark-dist': `${s.dist}px`,
+                      '--spark-delay': `${s.delay}s`,
+                      '--spark-size': `${s.size}px`,
+                    } as React.CSSProperties
+                  }
+                />
+              ))}
+            </div>
+          ) : null}
         </div>
       </div>
 
