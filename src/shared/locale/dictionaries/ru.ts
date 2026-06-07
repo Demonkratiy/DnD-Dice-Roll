@@ -23,6 +23,7 @@ export const ru = {
     colorAria: 'Цветовая палитра',
     showLogs: 'Показывать логи бросков',
     disableAnimations: 'Отключить анимации',
+    sound: 'Звук',
     open: 'Настройки',
   },
   character: {

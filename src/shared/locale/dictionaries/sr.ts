@@ -21,6 +21,7 @@ export const sr: Dictionary = {
     colorAria: 'Paleta boja',
     showLogs: 'Prikaži istoriju bacanja',
     disableAnimations: 'Isključi animacije',
+    sound: 'Zvuk',
     open: 'Podešavanja',
   },
   character: {

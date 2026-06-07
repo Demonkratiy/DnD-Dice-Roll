@@ -24,6 +24,7 @@ function readInitialSettings(): Settings {
     return {
       showLogs: parsed.showLogs ?? DEFAULT_SETTINGS.showLogs,
       disableAnimations: parsed.disableAnimations ?? DEFAULT_SETTINGS.disableAnimations,
+      soundEnabled: parsed.soundEnabled ?? DEFAULT_SETTINGS.soundEnabled,
     }
   } catch {
     return DEFAULT_SETTINGS
@@ -49,9 +50,13 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     (disableAnimations: boolean) => setSettings((prev) => ({ ...prev, disableAnimations })),
     [],
   )
+  const setSoundEnabled = useCallback(
+    (soundEnabled: boolean) => setSettings((prev) => ({ ...prev, soundEnabled })),
+    [],
+  )
 
   return (
-    <SettingsContext value={{ ...settings, setShowLogs, setDisableAnimations }}>
+    <SettingsContext value={{ ...settings, setShowLogs, setDisableAnimations, setSoundEnabled }}>
       {children}
     </SettingsContext>
   )

@@ -10,7 +10,8 @@ import { useMemo, useState } from 'react'
 import { Die, getDieSides, type DieEmphasis } from '@entities/die'
 import type { RollRequest, RollResult } from '@entities/roll'
 import { getClassPhrases, type PlayerClassId } from '@entities/player'
-import type { RollSource } from '@shared/services'
+import type { RollSource, SoundPlayer } from '@shared/services'
+import { noopSoundPlayer } from '@shared/services'
 import { useShuffleBag, getPressTier } from '@shared/lib'
 import { useLanguage, useT } from '@shared/locale'
 import { useStageRoll } from '../model/useStageRoll.ts'
@@ -23,6 +24,8 @@ export interface StageProps {
   onResult?: (result: RollResult) => void
   /** Класс героя — определяет набор реплик во время броска. */
   classId?: PlayerClassId
+  /** Звуковой проигрыватель. По умолчанию — немой (тихо игнорирует события). */
+  soundPlayer?: SoundPlayer
 }
 
 interface ViewDie {
@@ -59,7 +62,7 @@ const EPIC_SPARKS = Array.from({ length: 14 }, (_, i) => ({
 const RUNE_RAYS = Array.from({ length: 12 }, (_, i) => (360 / 12) * i)
 const RUNE_CRACKS = [18, 78, 138, 198, 258, 318]
 
-export function Stage({ request, rollSource, reducedMotion, onResult, classId }: StageProps) {
+export function Stage({ request, rollSource, reducedMotion, onResult, classId, soundPlayer = noopSoundPlayer }: StageProps) {
   const { lang } = useLanguage()
   const t = useT()
   const { animation, isPressing, intensity, handlers, lastResult, isRolling, droppedFlags } = useStageRoll({
@@ -91,6 +94,7 @@ export function Stage({ request, rollSource, reducedMotion, onResult, classId }:
     setWasPressing(isPressing)
     if (isPressing) {
       setShakePhrase(nextShakePhrase())
+      soundPlayer.play('shakeStart')
     }
   }
 
@@ -213,6 +217,27 @@ export function Stage({ request, rollSource, reducedMotion, onResult, classId }:
   // следующего броска (displayCrit обнуляется на scramble) или до зажатия для
   // нового броска. Под reducedMotion не показываем — это чисто декоративная вспышка.
   const critAftermath = !reducedMotion && displayCrit != null && !isPressing
+
+  // Звук на сменах фаз анимации (фронт перехода — тем же паттерном «корректировки
+  // состояния во время рендера»). На входе в settle — глухой «стук» падения; на
+  // входе в reveal — открывающий тон, а на крите вместо него фанфара/провальный
+  // аккорд. Звук независим от reduced-motion (это отдельный тумблер) и сам по себе
+  // безопасен: при выключенном звуке play() — no-op.
+  const [soundPhase, setSoundPhase] = useState(animation.phase)
+  if (animation.phase !== soundPhase) {
+    setSoundPhase(animation.phase)
+    if (animation.phase === 'settle') {
+      soundPlayer.play('settle')
+    } else if (animation.phase === 'reveal') {
+      if (displayCrit === 'success') {
+        soundPlayer.play('critSuccess')
+      } else if (displayCrit === 'fail') {
+        soundPlayer.play('critFail')
+      } else {
+        soundPlayer.play('reveal')
+      }
+    }
+  }
 
   // Когда зажатие пробивается в эпик-тир, подменяем обычную реплику тряски на
   // драматичную (`phrases.epic`). Фразу выбираем один раз на фронте входа в эпик

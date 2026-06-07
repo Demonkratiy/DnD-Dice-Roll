@@ -22,6 +22,7 @@ export const en: Dictionary = {
     colorAria: 'Color palette',
     showLogs: 'Show roll history',
     disableAnimations: 'Disable animations',
+    sound: 'Sound',
     open: 'Settings',
   },
   character: {

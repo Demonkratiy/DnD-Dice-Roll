@@ -21,6 +21,7 @@ export const tt: Dictionary = {
     colorAria: 'Төсләр палитрасы',
     showLogs: 'Ату тарихын күрсәтү',
     disableAnimations: 'Анимацияләрне сүндерү',
+    sound: 'Тавыш',
     open: 'Көйләүләр',
   },
   character: {

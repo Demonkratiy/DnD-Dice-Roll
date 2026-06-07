@@ -10,16 +10,20 @@ export interface Settings {
   showLogs: boolean
   /** Принудительно отключить анимации (помимо системного prefers-reduced-motion). */
   disableAnimations: boolean
+  /** Звуковое сопровождение броска. По умолчанию выключено — включает пользователь. */
+  soundEnabled: boolean
 }
 
 export interface SettingsContextValue extends Settings {
   setShowLogs: (value: boolean) => void
   setDisableAnimations: (value: boolean) => void
+  setSoundEnabled: (value: boolean) => void
 }
 
 export const DEFAULT_SETTINGS: Settings = {
   showLogs: true,
   disableAnimations: false,
+  soundEnabled: false,
 }
 
 export const SettingsContext = createContext<SettingsContextValue | null>(null)
