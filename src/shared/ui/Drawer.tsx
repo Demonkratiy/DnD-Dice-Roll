@@ -7,6 +7,7 @@
  */
 
 import { useRef, type PointerEvent, type ReactNode } from 'react'
+import { useOnEscape } from '@shared/lib'
 import styles from './Drawer.module.css'
 
 export interface DrawerProps {
@@ -30,6 +31,9 @@ export function Drawer({
   children,
 }: DrawerProps) {
   const startYRef = useRef<number | null>(null)
+
+  // Закрытие по Esc, пока панель открыта.
+  useOnEscape(open, () => onOpenChange(false))
 
   const onHandlePointerDown = (event: PointerEvent) => {
     startYRef.current = event.clientY

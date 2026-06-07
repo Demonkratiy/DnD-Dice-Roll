@@ -7,6 +7,7 @@
 
 import { Switch, Segmented } from '@shared/ui'
 import type { LoadedRollMode } from '@shared/lib'
+import { useOnEscape } from '@shared/lib'
 import { DEV_TOOLS_ENABLED } from '@shared/config'
 import { noopSoundPlayer, type SoundPlayer } from '@shared/services'
 import {
@@ -56,6 +57,10 @@ export function SettingsPanel({
   const { colorId, setColor } = useColor()
   const { lang, setLanguage } = useLanguage()
   const t = useT()
+
+  // Закрытие по Esc (пока окно открыто). Идёт через onClose, поэтому звук
+  // panelClose отыгрывается тем же путём, что и клик по фону/✕.
+  useOnEscape(open, onClose)
 
   if (!open) {
     return null

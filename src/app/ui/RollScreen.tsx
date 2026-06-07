@@ -5,7 +5,7 @@
  * кубика → настройки броска → (опц.) выезжающая панель логов с хэндлом-пером.
  */
 
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { IconButton } from '@shared/ui'
 import { createLocalRollSource, createWebAudioSoundPlayer } from '@shared/services'
 import { useReducedMotion, createLoadedRng, type LoadedRollMode } from '@shared/lib'
@@ -51,11 +51,15 @@ export function RollScreen() {
   // Звуковой проигрыватель. Создаётся ОДИН раз за жизнь экрана — иначе каждое
   // переключение тумблера плодило бы новый AudioContext (старые не закрываются,
   // у браузера лимит ~6 живых контекстов), отчего звук «затихал» с каждым разом.
-  // Актуальное состояние тумблера читаем через ref, чтобы геттер `isEnabled`
-  // не «застывал» на значении момента создания.
+  // Актуальное состояние тумблера держим в ref (обновляем в эффекте, не в
+  // рендере); геттер `isEnabled` читает его лишь в момент воспроизведения (по
+  // жесту), а не во время рендера — это классический «latest ref».
   const soundEnabledRef = useRef(settings.soundEnabled)
-  soundEnabledRef.current = settings.soundEnabled
+  useEffect(() => {
+    soundEnabledRef.current = settings.soundEnabled
+  }, [settings.soundEnabled])
   const soundPlayer = useMemo(
+    // eslint-disable-next-line react-hooks/refs -- ref читается не в рендере, а на play() по жесту
     () => createWebAudioSoundPlayer({ isEnabled: () => soundEnabledRef.current }),
     [],
   )

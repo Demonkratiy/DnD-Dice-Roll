@@ -49,6 +49,18 @@ describe('CharacterEditor', () => {
     expect(onClose).toHaveBeenCalledTimes(1)
   })
 
+  it('Esc закрывает окно', () => {
+    const { onClose } = setup()
+    fireEvent.keyDown(window, { key: 'Escape' })
+    expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
+  it('не реагирует на Esc, когда закрыт', () => {
+    const { onClose } = setup({ open: false })
+    fireEvent.keyDown(window, { key: 'Escape' })
+    expect(onClose).not.toHaveBeenCalled()
+  })
+
   it('клик по классу выбирает его (без закрытия окна)', () => {
     const { onClassChange, onClose } = setup()
     fireEvent.click(screen.getByRole('radio', { name: /Wizard/ }))

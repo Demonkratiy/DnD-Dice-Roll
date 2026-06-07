@@ -11,6 +11,7 @@
 
 import { PLAYER_CLASSES, ClassIcon, type PlayerClassId } from '@entities/player'
 import { useT } from '@shared/locale'
+import { useOnEscape } from '@shared/lib'
 import { noopSoundPlayer, type SoundPlayer } from '@shared/services'
 import styles from './CharacterEditor.module.css'
 
@@ -35,6 +36,9 @@ export function CharacterEditor({
   soundPlayer = noopSoundPlayer,
 }: CharacterEditorProps) {
   const t = useT()
+
+  // Закрытие по Esc (пока окно открыто) — через onClose, с тем же звуком panelClose.
+  useOnEscape(open, onClose)
 
   if (!open) {
     return null
