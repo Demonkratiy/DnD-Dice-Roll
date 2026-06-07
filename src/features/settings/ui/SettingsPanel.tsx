@@ -6,6 +6,8 @@
  */
 
 import { Switch, Segmented } from '@shared/ui'
+import type { LoadedRollMode } from '@shared/lib'
+import { DEV_TOOLS_ENABLED } from '@shared/config'
 import {
   useShape,
   SHAPES,
@@ -17,6 +19,9 @@ import {
 import { useLanguage, useT, LANGUAGES, type LanguageId } from '@shared/locale'
 import styles from './SettingsPanel.module.css'
 
+/** Режим DEV-«форс-броска»: выкл. / всегда макс (нат-20) / всегда мин (нат-1). */
+export type ForceRollMode = LoadedRollMode | 'off'
+
 export interface SettingsPanelProps {
   open: boolean
   onClose: () => void
@@ -24,6 +29,11 @@ export interface SettingsPanelProps {
   onShowLogsChange: (value: boolean) => void
   disableAnimations: boolean
   onDisableAnimationsChange: (value: boolean) => void
+  soundEnabled: boolean
+  onSoundEnabledChange: (value: boolean) => void
+  /** DEV-only: форс-бросок для теста крит-эффектов. */
+  forceRoll: ForceRollMode
+  onForceRollChange: (value: ForceRollMode) => void
 }
 
 export function SettingsPanel({
@@ -33,6 +43,10 @@ export function SettingsPanel({
   onShowLogsChange,
   disableAnimations,
   onDisableAnimationsChange,
+  soundEnabled,
+  onSoundEnabledChange,
+  forceRoll,
+  onForceRollChange,
 }: SettingsPanelProps) {
   const { shapeId, setShape } = useShape()
   const { colorId, setColor } = useColor()
@@ -100,7 +114,28 @@ export function SettingsPanel({
             checked={disableAnimations}
             onChange={onDisableAnimationsChange}
           />
+          <Switch
+            label={t.settings.sound}
+            checked={soundEnabled}
+            onChange={onSoundEnabledChange}
+          />
         </div>
+
+        {DEV_TOOLS_ENABLED && (
+          <div className={styles.group}>
+            <span className={styles.groupLabel}>Force roll (dev)</span>
+            <Segmented<ForceRollMode>
+              label="Force roll (dev)"
+              options={[
+                { value: 'off', label: 'Off' },
+                { value: 'max', label: 'Nat 20' },
+                { value: 'min', label: 'Nat 1' },
+              ]}
+              value={forceRoll}
+              onChange={onForceRollChange}
+            />
+          </div>
+        )}
       </div>
     </div>
   )

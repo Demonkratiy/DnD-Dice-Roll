@@ -65,3 +65,19 @@ export function createCryptoRng(): Rng {
 export function rollSingleDie(rng: Rng, sides: number): number {
   return Math.floor(rng.next() * sides) + 1
 }
+
+/** Режим «заряженного» кубика для DEV-тестов: всегда максимум или минимум. */
+export type LoadedRollMode = 'max' | 'min'
+
+/**
+ * DEV-only «заряженный» RNG: всегда даёт максимум или минимум грани.
+ * Нужен, чтобы тестировать крит-эффекты (нат-20 / нат-1) без перебора десятков
+ * честных бросков. Подменяется на шве RollSource, поэтому доменный `rollDice`
+ * и крит-логика остаются нетронутыми: кость честно «выпадает» 20/1.
+ *
+ * `next ≈ 0.999999` → floor(next * sides) + 1 = sides (максимум для любой грани,
+ * включая d100, т.к. 0.999999 > 1 − 1/100); `next = 0` → 1 (минимум).
+ */
+export function createLoadedRng(mode: LoadedRollMode): Rng {
+  return { next: () => (mode === 'max' ? 0.999999 : 0) }
+}

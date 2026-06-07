@@ -85,6 +85,7 @@ src/
 
 ```bash
 npm run dev        # дев-сервер
+npm run dev:prodview # дев-сервер «как в проде»: dev-инструменты (force-roll и т.п.) скрыты
 npm run build      # tsc -b + vite build (продакшен-сборка)
 npm run preview    # предпросмотр прод-сборки
 npm run lint       # ESLint
@@ -119,6 +120,7 @@ npm run test:e2e:ui # Playwright в UI-режиме (отладка)
 | Состояние, провайдеры, reducer, поток данных | [`dev-wiki/state-management.md`](./dev-wiki/state-management.md) |
 | Темы, CSS-токены, оси «стиль»/«цвет», палитры | [`dev-wiki/theming.md`](./dev-wiki/theming.md) |
 | Анимация броска, жест press/shake, оркестрация | [`dev-wiki/animation-and-gesture.md`](./dev-wiki/animation-and-gesture.md) |
+| Звук броска: синтез Web Audio, события, тумблер | [`dev-wiki/audio.md`](./dev-wiki/audio.md) |
 | Доменное ядро броска, RNG, RollSource, мультиплеер | [`dev-wiki/rolling-domain.md`](./dev-wiki/rolling-domain.md) |
 | SVG-силуэты кубиков, вариации форм, FrameProvider | [`dev-wiki/dice-silhouettes.md`](./dev-wiki/dice-silhouettes.md) |
 | Персонаж (имя, класс, иконка-маркер), редактор героя | [`dev-wiki/character.md`](./dev-wiki/character.md) |

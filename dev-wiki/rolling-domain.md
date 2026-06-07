@@ -67,6 +67,30 @@ interface Rng { next(): number } // [0, 1)
   недоступен. Остаточный modulo bias при раскладке на грани ~2^-32 — неощутим.
 - `createMathRandomRng()` — на `Math.random()`. Используется там, где честность
   не критична (например, выбор реплик героя в `useShuffleBag`).
+- `createLoadedRng(mode)` — **dev-only** «заряженный» генератор: `'max'` всегда
+  отдаёт верхнюю грань (нат-20 / 100), `'min'` — нижнюю (нат-1). Под капотом
+  `next()` возвращает `0.999999` либо `0`.
+
+### Форс-бросок для проверки критов (DEV)
+
+Крит-эффекты (руна-печать, реплики, звуки `critSuccess`/`critFail`) выпадают
+редко, поэтому отлаживать их «вживую» через десятки бросков неудобно. В
+режиме разработки (`import.meta.env.DEV`) в настройках есть блок **Force roll**
+(Off / Nat 20 / Nat 1).
+
+Механизм опирается на тот же шов инъекции RNG: при выборе режима `RollScreen`
+создаёт `createLocalRollSource({ rng: createLoadedRng('max' | 'min') })` вместо
+дефолтного crypto-RNG. **Домен и логика крита не меняются** — кость честно
+«выпадает» 20 или 1, а крит определяется штатно. В прод-сборке весь блок
+вырезается tree-shaking'ом. Управляющий проп — `forceRoll`/`onForceRollChange`
+в [SettingsPanel.tsx](../src/features/settings/ui/SettingsPanel.tsx).
+
+Видимость блока завязана на единый флаг
+[`DEV_TOOLS_ENABLED`](../src/shared/config/devTools.ts): он `true` только в
+«настоящем» dev (`npm run dev`) и гасится как в прод-сборке, так и в режиме
+**prod-view** (`npm run dev:prodview`, Vite `--mode prodview` → `.env.prodview`
+с `VITE_PROD_VIEW=true`). Так можно гонять приложение на dev-сервере, но видеть
+его ровно как в продакшене.
 
 ### Seedable RNG — отложено (обсудить при мультиплеере)
 

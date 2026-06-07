@@ -7,8 +7,8 @@
 
 import { useMemo, useState } from 'react'
 import { IconButton } from '@shared/ui'
-import { createLocalRollSource } from '@shared/services'
-import { useReducedMotion } from '@shared/lib'
+import { createLocalRollSource, createWebAudioSoundPlayer } from '@shared/services'
+import { useReducedMotion, createLoadedRng, type LoadedRollMode } from '@shared/lib'
 import { useT } from '@shared/locale'
 import { createLocalPlayer, ClassIcon } from '@entities/player'
 import type { DieType } from '@entities/die'
@@ -29,15 +29,32 @@ export function RollScreen() {
     () => createLocalPlayer(character.name, character.classId),
     [character.name, character.classId],
   )
+  // DEV-only «форс-бросок»: в dev-сборке можно заставить кубик всегда давать
+  // максимум/минимум (для теста крит-эффектов). Реализовано через подмену
+  // RNG на шве RollSource — домен и крит-логика остаются чистыми. Контрол
+  // виден только в DEV (см. SettingsPanel), в проде состояние всегда 'off'.
+  const [forceRoll, setForceRoll] = useState<LoadedRollMode | 'off'>('off')
   const rollSource = useMemo(
-    () => createLocalRollSource({ getAuthor: () => player }),
-    [player],
+    () =>
+      createLocalRollSource({
+        getAuthor: () => player,
+        rng: forceRoll === 'off' ? undefined : createLoadedRng(forceRoll),
+      }),
+    [player, forceRoll],
   )
 
   const { entries, addRoll, clearLog } = useRollLog()
   const settings = useSettings()
   const systemReducedMotion = useReducedMotion()
   const reducedMotion = systemReducedMotion || settings.disableAnimations
+
+  // Звуковой проигрыватель. Тумблер `soundEnabled` пробрасываем прямо в геттер;
+  // при его смене useMemo пересоздаёт проигрыватель (переключения редки, по
+  // умолчанию звук выключен), поэтому держать «живой» ref не требуется.
+  const soundPlayer = useMemo(
+    () => createWebAudioSoundPlayer({ isEnabled: () => settings.soundEnabled }),
+    [settings.soundEnabled],
+  )
 
   const [die, setDie] = useState<DieType>('d20')
   const [count, setCount] = useState(1)
@@ -108,6 +125,7 @@ export function RollScreen() {
           reducedMotion={reducedMotion}
           onResult={handleResult}
           classId={player.classId}
+          soundPlayer={soundPlayer}
         />
         <DicePicker value={die} onChange={handleDieChange} />
         <RollControls
@@ -128,6 +146,10 @@ export function RollScreen() {
         onShowLogsChange={settings.setShowLogs}
         disableAnimations={settings.disableAnimations}
         onDisableAnimationsChange={settings.setDisableAnimations}
+        soundEnabled={settings.soundEnabled}
+        onSoundEnabledChange={settings.setSoundEnabled}
+        forceRoll={forceRoll}
+        onForceRollChange={setForceRoll}
       />
 
       <CharacterEditor

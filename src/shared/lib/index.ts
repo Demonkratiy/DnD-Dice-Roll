@@ -1,5 +1,11 @@
 export type { Rng } from './rng.ts'
-export { createMathRandomRng, createCryptoRng, rollSingleDie } from './rng.ts'
+export {
+  createMathRandomRng,
+  createCryptoRng,
+  rollSingleDie,
+  createLoadedRng,
+  type LoadedRollMode,
+} from './rng.ts'
 export {
   useRollAnimation,
   type RollPhase,

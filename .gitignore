@@ -38,6 +38,7 @@ blob-report
 .env
 .env.*
 !.env.example
+!.env.prodview
 
 # Editor directories and files
 .vscode/*
