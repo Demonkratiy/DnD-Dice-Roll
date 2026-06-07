@@ -8,8 +8,11 @@ import { createWebAudioSoundPlayer, noopSoundPlayer } from './audio.ts'
  */
 
 class FakeAudioParam {
+  value = 0
   setValueAtTime = vi.fn()
   exponentialRampToValueAtTime = vi.fn()
+  setTargetAtTime = vi.fn()
+  cancelScheduledValues = vi.fn()
 }
 
 class FakeOscillator {
@@ -22,6 +25,13 @@ class FakeOscillator {
 
 class FakeGain {
   gain = new FakeAudioParam()
+  connect = vi.fn(() => ({ connect: vi.fn() }))
+}
+
+class FakeBiquadFilter {
+  type = 'lowpass'
+  frequency = new FakeAudioParam()
+  Q = new FakeAudioParam()
   connect = vi.fn(() => ({ connect: vi.fn() }))
 }
 
@@ -48,6 +58,9 @@ class FakeAudioContext {
   }
   createGain() {
     return new FakeGain()
+  }
+  createBiquadFilter() {
+    return new FakeBiquadFilter()
   }
   createConvolver() {
     return new FakeConvolver()
@@ -105,10 +118,48 @@ describe('createWebAudioSoundPlayer', () => {
     const player = createWebAudioSoundPlayer({ isEnabled: () => true })
     expect(() => player.play('reveal')).not.toThrow()
   })
+
+  it('plays the tier escalation one-shots without throwing', () => {
+    const player = createWebAudioSoundPlayer({ isEnabled: () => true })
+    expect(() => {
+      player.play('charged')
+      player.play('epic')
+    }).not.toThrow()
+    expect(FakeAudioContext.instances).toBe(1)
+  })
+
+  it('starts a sustained loop lazily and controls it safely', () => {
+    const player = createWebAudioSoundPlayer({ isEnabled: () => true })
+    const shake = player.loop('shake')
+    const spin = player.loop('spin')
+    expect(FakeAudioContext.instances).toBe(1)
+    expect(() => {
+      shake.setIntensity(0.5)
+      shake.stop()
+      shake.stop() // повторная остановка безопасна
+      spin.setIntensity(1)
+      spin.stop()
+    }).not.toThrow()
+  })
+
+  it('returns a no-op loop when sound is disabled', () => {
+    const player = createWebAudioSoundPlayer({ isEnabled: () => false })
+    const loop = player.loop('shake')
+    expect(FakeAudioContext.instances).toBe(0)
+    expect(() => {
+      loop.setIntensity(0.5)
+      loop.stop()
+    }).not.toThrow()
+  })
 })
 
 describe('noopSoundPlayer', () => {
   it('does nothing and never throws', () => {
     expect(() => noopSoundPlayer.play('critSuccess')).not.toThrow()
+    const loop = noopSoundPlayer.loop('shake')
+    expect(() => {
+      loop.setIntensity(0.5)
+      loop.stop()
+    }).not.toThrow()
   })
 })

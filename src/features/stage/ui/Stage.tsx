@@ -6,11 +6,11 @@
  * кубиках во время тряски они хаотично подрагивают каждый по-своему.
  */
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Die, getDieSides, type DieEmphasis } from '@entities/die'
 import type { RollRequest, RollResult } from '@entities/roll'
 import { getClassPhrases, type PlayerClassId } from '@entities/player'
-import type { RollSource, SoundPlayer } from '@shared/services'
+import type { RollSource, SoundPlayer, SoundLoop } from '@shared/services'
 import { noopSoundPlayer } from '@shared/services'
 import { useShuffleBag, getPressTier } from '@shared/lib'
 import { useLanguage, useT } from '@shared/locale'
@@ -249,6 +249,47 @@ export function Stage({ request, rollSource, reducedMotion, onResult, classId, s
       setEpicPhrase(nextEpicPhrase())
     }
   }
+
+  // Звук на эскалации зажатия по тирам: charged (средний) и epic (максимум). intensity
+  // растёт только пока держим, поэтому срабатываем лишь «вверх» (фронт перехода тира
+  // ловим тем же паттерном «корректировки состояния во время рендера»). Звук не
+  // завязан на reduced-motion — используем getPressTier(intensity), а не isEpic.
+  const soundTier = isPressing ? getPressTier(intensity) : 'normal'
+  const [prevSoundTier, setPrevSoundTier] = useState(soundTier)
+  if (soundTier !== prevSoundTier) {
+    if (soundTier === 'charged' && prevSoundTier === 'normal') {
+      soundPlayer.play('charged')
+    } else if (soundTier === 'epic') {
+      soundPlayer.play('epic')
+    }
+    setPrevSoundTier(soundTier)
+  }
+
+  // Непрерывный звук растряски: запускается на зажатии и глушится на отпускании.
+  // Loop живёт в ref между рендерами; здесь — корректный случай для эффекта
+  // (нужна очистка start/stop). Интенсивность модулируем отдельным эффектом.
+  const shakeLoopRef = useRef<SoundLoop | null>(null)
+  useEffect(() => {
+    if (!isPressing) return
+    const loop = soundPlayer.loop('shake')
+    shakeLoopRef.current = loop
+    return () => {
+      loop.stop()
+      shakeLoopRef.current = null
+    }
+  }, [isPressing, soundPlayer])
+
+  useEffect(() => {
+    shakeLoopRef.current?.setIntensity(intensity)
+  }, [intensity])
+
+  // Непрерывный «вой» вращения: живёт на фазе scramble, глушится (cleanup)
+  // при выходе из неё (settle) — финальный спад совпадает с приземлением.
+  useEffect(() => {
+    if (animation.phase !== 'scramble') return
+    const loop = soundPlayer.loop('spin')
+    return () => loop.stop()
+  }, [animation.phase, soundPlayer])
 
   return (
     <section className={styles.stage} aria-label={t.stage.sceneAria}>

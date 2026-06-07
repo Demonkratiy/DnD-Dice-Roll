@@ -3,5 +3,11 @@ export type {
   LocalRollSourceDeps,
 } from './RollSource.ts'
 export { createLocalRollSource } from './RollSource.ts'
-export type { SoundEvent, SoundPlayer, WebAudioSoundPlayerDeps } from './audio.ts'
+export type {
+  SoundEvent,
+  LoopEvent,
+  SoundLoop,
+  SoundPlayer,
+  WebAudioSoundPlayerDeps,
+} from './audio.ts'
 export { noopSoundPlayer, createWebAudioSoundPlayer } from './audio.ts'

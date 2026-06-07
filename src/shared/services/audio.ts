@@ -10,17 +10,48 @@
  * `noopSoundPlayer` остаётся тихой заглушкой для тестов и как безопасный дефолт.
  */
 
-/** Идентификаторы звуковых событий приложения. */
+/** Идентификаторы одноразовых звуковых событий приложения. */
 export type SoundEvent =
   | 'shakeStart'
+  | 'charged'
+  | 'epic'
   | 'settle'
   | 'reveal'
   | 'critSuccess'
   | 'critFail'
 
+/**
+ * Идентификаторы непрерывных (sustained) звуков, тянущихся во времени.
+ * Оба — «монетный» перезвон в духе Coin Toss Сэцера (FF6): короткий звяк
+ * монеты повторяется циклично с лёгким случайным разбросом высоты/громкости.
+ * `shake` — горсть монет в ладони (частит и ярчает с интенсивностью),
+ * `spin` — подброшенная горсть осыпается со звоном (редеет и спускается по тону).
+ */
+export type LoopEvent = 'shake' | 'spin'
+
+/** Управление непрерывным звуком: модуляция интенсивностью и остановка. */
+export interface SoundLoop {
+  /** Установить нормализованную интенсивность 0..1 (громкость/яркость/темп). */
+  setIntensity(value: number): void
+  /** Плавно остановить и освободить узлы. */
+  stop(): void
+}
+
 /** Проигрыватель звуков. */
 export interface SoundPlayer {
   play(event: SoundEvent): void
+  /** Запустить непрерывный звук; вернуть управляющий хэндл. */
+  loop(event: LoopEvent): SoundLoop
+}
+
+/** Тихий хэндл-заглушка для непрерывного звука. */
+const noopSoundLoop: SoundLoop = {
+  setIntensity: () => {
+    /* намеренно ничего не делаем */
+  },
+  stop: () => {
+    /* намеренно ничего не делаем */
+  },
 }
 
 /** Заглушка: ничего не воспроизводит. Безопасный дефолт и инструмент для тестов. */
@@ -28,6 +59,7 @@ export const noopSoundPlayer: SoundPlayer = {
   play: () => {
     /* намеренно ничего не делаем */
   },
+  loop: () => noopSoundLoop,
 }
 
 /** Зависимости веб-аудио-проигрывателя (инъектируются ради тестируемости). */
@@ -54,6 +86,11 @@ function getAudioContextCtor(): AudioContextCtor | null {
 /** Небольшая вариация высоты тона, чтобы повторы не звучали «роботом». */
 function vary(value: number, ratio = 0.04): number {
   return value * (1 + (Math.random() * 2 - 1) * ratio)
+}
+
+/** Ограничить значение диапазоном 0..1. */
+function clamp01(value: number): number {
+  return Math.min(1, Math.max(0, value))
 }
 
 /**
@@ -124,6 +161,22 @@ const VOICES: Record<SoundEvent, Voice[]> = {
     { type: 'triangle', freq: 329.63, gain: 0.1, duration: 0.24, attack: 0.005, reverb: 0.25, vary: 0, delay: 0.07 }, // E4
     { type: 'sine', freq: 659.25, gain: 0.03, duration: 0.2, attack: 0.006, reverb: 0.3, vary: 0, delay: 0.07 }, // E5 искра
   ],
+  // Переход в «заряженный» тир — короткий восходящий «набор силы» (E4→B4):
+  // тонкий намёк, что бросок крепчает. Подкреплён лёгкой искрой и ревербом.
+  charged: [
+    { type: 'triangle', freq: 329.63, gain: 0.08, duration: 0.18, attack: 0.005, reverb: 0.25, vary: 0 }, // E4
+    { type: 'triangle', freq: 493.88, gain: 0.08, duration: 0.26, attack: 0.005, reverb: 0.3, vary: 0, delay: 0.08 }, // B4
+    { type: 'sine', freq: 987.77, gain: 0.03, duration: 0.2, attack: 0.006, reverb: 0.35, vary: 0, delay: 0.08 }, // B5 искра
+  ],
+  // Переход в «эпический» тир — мощный «всплеск силы»: низкий удар-бас +
+  // восходящее яркое трезвучие (A4→E5→A5) с долгим ревербом. Максимум драмы.
+  epic: [
+    { type: 'triangle', freq: 110, gain: 0.22, duration: 0.5, attack: 0.006, reverb: 0.3, vary: 0 }, // A2 удар
+    { type: 'square', freq: 440, gain: 0.08, duration: 0.4, attack: 0.005, reverb: 0.35, vary: 0, delay: 0.04 }, // A4
+    { type: 'square', freq: 659.25, gain: 0.08, duration: 0.45, attack: 0.005, reverb: 0.4, vary: 0, delay: 0.12 }, // E5
+    { type: 'triangle', freq: 880, gain: 0.1, duration: 0.6, attack: 0.005, reverb: 0.45, vary: 0, delay: 0.2 }, // A5
+    { type: 'sine', freq: 1760, gain: 0.04, duration: 0.7, attack: 0.006, reverb: 0.5, vary: 0, delay: 0.2 }, // A6 блик
+  ],
   // Приземление — мягкий «арфовый» удар вместо сухого тука: низкая нота
   // с быстрым спадом частоты (удар) + тёплая квинта сверху и лёгкий реверб.
   settle: [
@@ -147,33 +200,54 @@ const VOICES: Record<SoundEvent, Voice[]> = {
     { type: 'sine', freq: 1318.51, gain: 0.12, duration: 0.9, attack: 0.005, reverb: 0.45, vary: 0, delay: 0.28 }, // E6
     { type: 'sine', freq: 1975.53, gain: 0.04, duration: 0.7, attack: 0.005, reverb: 0.45, vary: 0, delay: 0.28 }, // B6
   ],
-  // Крит-успех — мини «Victory Fanfare» в духе FF: фирменный ритм «та-та-та-
-  // таа» (три короткие ноты + длинная разрешающая). Яркий «медный» square-lead
-  // дублируется тёплым triangle на октаву ниже; на разрешении — полный
-  // C-мажорный аккорд с басом и щедрым ревербом — торжество.
+  // Крит-успех — узнаваемая «Victory Fanfare» Нобуо Уэмацу (FF). Сохранён сам
+  // мотив: трельный затакт «та-та-та-таа» на C5, затем фраза A♭4→B♭4 и
+  // разрешение в полный C-мажор с басом и колоколом. Тембр — чистая «арфа»
+  // (triangle + sine-обертоны, БЕЗ square): тот же тёплый звон, что у каскада
+  // вращения, поэтому фанфара «прорастает» из него, а не звучит чужеродно.
   critSuccess: [
-    // Затакт: три короткие «медные» ноты G5 (lead + октавный дубль).
-    { type: 'square', freq: 783.99, gain: 0.1, duration: 0.1, attack: 0.005, reverb: 0.25, vary: 0 },
-    { type: 'triangle', freq: 392, gain: 0.12, duration: 0.1, attack: 0.005, reverb: 0.2, vary: 0 },
-    { type: 'square', freq: 783.99, gain: 0.1, duration: 0.1, attack: 0.005, reverb: 0.25, vary: 0, delay: 0.13 },
-    { type: 'triangle', freq: 392, gain: 0.12, duration: 0.1, attack: 0.005, reverb: 0.2, vary: 0, delay: 0.13 },
-    { type: 'square', freq: 783.99, gain: 0.1, duration: 0.1, attack: 0.005, reverb: 0.25, vary: 0, delay: 0.26 },
-    { type: 'triangle', freq: 392, gain: 0.12, duration: 0.1, attack: 0.005, reverb: 0.2, vary: 0, delay: 0.26 },
-    // Разрешение: длинный C-мажорный аккорд (C-E-G-C) + бас C3.
-    { type: 'triangle', freq: 130.81, gain: 0.2, duration: 0.7, attack: 0.006, reverb: 0.3, vary: 0, delay: 0.4 }, // C3 бас
-    { type: 'square', freq: 523.25, gain: 0.1, duration: 0.7, attack: 0.006, reverb: 0.4, vary: 0, delay: 0.4 }, // C5
-    { type: 'triangle', freq: 659.25, gain: 0.11, duration: 0.7, attack: 0.006, reverb: 0.4, vary: 0, delay: 0.4 }, // E5
-    { type: 'square', freq: 783.99, gain: 0.1, duration: 0.7, attack: 0.006, reverb: 0.4, vary: 0, delay: 0.4 }, // G5
-    { type: 'sine', freq: 1046.5, gain: 0.1, duration: 0.8, attack: 0.006, reverb: 0.45, vary: 0, delay: 0.4 }, // C6 колокол
+    // Затакт-трель: три коротких C5 (triangle-«голос» + октавный sine-«блик»
+    // C6 + квинтовый обертон G6, чтобы начало звенело арфой, а не глохло).
+    { type: 'triangle', freq: 523.25, gain: 0.14, duration: 0.11, attack: 0.004, reverb: 0.28, vary: 0 },
+    { type: 'sine', freq: 1046.5, gain: 0.05, duration: 0.13, attack: 0.004, reverb: 0.32, vary: 0 },
+    { type: 'sine', freq: 1567.98, gain: 0.02, duration: 0.12, attack: 0.004, reverb: 0.34, vary: 0 },
+    { type: 'triangle', freq: 523.25, gain: 0.14, duration: 0.11, attack: 0.004, reverb: 0.28, vary: 0, delay: 0.13 },
+    { type: 'sine', freq: 1046.5, gain: 0.05, duration: 0.13, attack: 0.004, reverb: 0.32, vary: 0, delay: 0.13 },
+    { type: 'sine', freq: 1567.98, gain: 0.02, duration: 0.12, attack: 0.004, reverb: 0.34, vary: 0, delay: 0.13 },
+    { type: 'triangle', freq: 523.25, gain: 0.14, duration: 0.11, attack: 0.004, reverb: 0.28, vary: 0, delay: 0.26 },
+    { type: 'sine', freq: 1046.5, gain: 0.05, duration: 0.13, attack: 0.004, reverb: 0.32, vary: 0, delay: 0.26 },
+    { type: 'sine', freq: 1567.98, gain: 0.02, duration: 0.12, attack: 0.004, reverb: 0.34, vary: 0, delay: 0.26 },
+    // «Таа» — держим C5 (с октавным и квинтовым бликами для блеска).
+    { type: 'triangle', freq: 523.25, gain: 0.15, duration: 0.3, attack: 0.004, reverb: 0.32, vary: 0, delay: 0.4 },
+    { type: 'sine', freq: 1046.5, gain: 0.05, duration: 0.32, attack: 0.004, reverb: 0.36, vary: 0, delay: 0.4 },
+    { type: 'sine', freq: 1567.98, gain: 0.02, duration: 0.3, attack: 0.004, reverb: 0.36, vary: 0, delay: 0.4 },
+    // Вторая фраза: A♭4 → B♭4 (подъём к разрешению) — с октавными бликами сверху.
+    { type: 'triangle', freq: 415.3, gain: 0.13, duration: 0.16, attack: 0.004, reverb: 0.3, vary: 0, delay: 0.74 },
+    { type: 'sine', freq: 830.61, gain: 0.05, duration: 0.18, attack: 0.004, reverb: 0.34, vary: 0, delay: 0.74 },
+    { type: 'triangle', freq: 466.16, gain: 0.13, duration: 0.16, attack: 0.004, reverb: 0.3, vary: 0, delay: 0.92 },
+    { type: 'sine', freq: 932.33, gain: 0.05, duration: 0.18, attack: 0.004, reverb: 0.34, vary: 0, delay: 0.92 },
+    // Разрешение: длинный C-мажор (C3 бас + C4 + аккорд C5-E5-G5) и колокол C6.
+    { type: 'triangle', freq: 130.81, gain: 0.2, duration: 0.85, attack: 0.006, reverb: 0.3, vary: 0, delay: 1.1 }, // C3 бас
+    { type: 'triangle', freq: 261.63, gain: 0.1, duration: 0.85, attack: 0.006, reverb: 0.35, vary: 0, delay: 1.1 }, // C4
+    { type: 'triangle', freq: 523.25, gain: 0.11, duration: 0.85, attack: 0.006, reverb: 0.4, vary: 0, delay: 1.1 }, // C5
+    { type: 'triangle', freq: 659.25, gain: 0.11, duration: 0.85, attack: 0.006, reverb: 0.4, vary: 0, delay: 1.1 }, // E5
+    { type: 'triangle', freq: 783.99, gain: 0.09, duration: 0.85, attack: 0.006, reverb: 0.4, vary: 0, delay: 1.1 }, // G5
+    { type: 'sine', freq: 1046.5, gain: 0.1, duration: 0.95, attack: 0.006, reverb: 0.45, vary: 0, delay: 1.1 }, // C6 колокол
   ],
-  // Крит-провал — «трагический» нисходящий минорный мотив в духе FF
-  // (поражение/game over): две «виолончельные» ноты (triangle) вниз по
-  // минорному трезвучию + низкий бас и реверб — зловеще, но благородно.
+  // Крит-провал — «благородное поражение» арфой в a-moll (относительный минор
+  // к C-мажору успеха — тематичная пара). Тот же арфовый тембр, что у каскада
+  // вращения, поэтому крит «дорастает» из него: нисходящее арпеджио E5→C5→A4
+  // замедляется и оседает в гулкую низкую квинту A-E с басом — пусто и горько,
+  // но без писка. Длинный реверб даёт «уходящее эхо» падения.
   critFail: [
-    { type: 'triangle', freq: 311.13, gain: 0.16, duration: 0.32, attack: 0.006, reverb: 0.25, vary: 0 }, // D#4
-    { type: 'triangle', freq: 261.63, gain: 0.16, duration: 0.34, attack: 0.006, reverb: 0.25, vary: 0, delay: 0.18 }, // C4
-    { type: 'triangle', freq: 207.65, gain: 0.18, duration: 0.6, attack: 0.006, reverb: 0.35, vary: 0, delay: 0.36 }, // G#3 (разрешение)
-    { type: 'sine', freq: 103.83, gain: 0.2, duration: 0.7, attack: 0.008, reverb: 0.3, vary: 0, delay: 0.36 }, // G#2 бас
+    { type: 'triangle', freq: 659.25, gain: 0.12, duration: 0.3, attack: 0.005, reverb: 0.28, vary: 0 }, // E5
+    { type: 'sine', freq: 1318.51, gain: 0.03, duration: 0.3, attack: 0.006, reverb: 0.3, vary: 0 }, // E6 призвук
+    { type: 'triangle', freq: 523.25, gain: 0.12, duration: 0.32, attack: 0.005, reverb: 0.28, vary: 0, delay: 0.22 }, // C5
+    { type: 'triangle', freq: 440, gain: 0.13, duration: 0.36, attack: 0.005, reverb: 0.3, vary: 0, delay: 0.46 }, // A4
+    // Оседание: гулкая низкая квинта A-E + бас A2, долгий хвост.
+    { type: 'triangle', freq: 220, gain: 0.16, duration: 0.85, attack: 0.006, reverb: 0.35, vary: 0, delay: 0.78 }, // A3
+    { type: 'triangle', freq: 164.81, gain: 0.11, duration: 0.85, attack: 0.006, reverb: 0.35, vary: 0, delay: 0.78 }, // E3 (квинта)
+    { type: 'sine', freq: 110, gain: 0.2, duration: 0.95, attack: 0.008, reverb: 0.3, vary: 0, delay: 0.78 }, // A2 бас
   ],
 }
 
@@ -243,6 +317,144 @@ export function createWebAudioSoundPlayer(deps: WebAudioSoundPlayerDeps): SoundP
     osc.stop(t1 + 0.02)
   }
 
+  // Один «щипок» арфы: тёплый гармоничный тон (как в финальном аккорде
+  // `reveal`) — основной triangle + мягкие октава и квинта-сверху (sine),
+  // мгновенная атака и долгий звон с ревербом. В отличие от негармоничного
+  // «звяка», гармоники дают музыкальную струну, а не «стеклянный» призвук.
+  const HARP_PARTIALS: { ratio: number; gain: number; type: OscillatorType }[] = [
+    { ratio: 1, gain: 1, type: 'triangle' },
+    { ratio: 2, gain: 0.3, type: 'sine' }, // октава
+    { ratio: 3, gain: 0.12, type: 'sine' }, // октава + квинта
+  ]
+  const playHarp = (
+    audio: AudioContext,
+    startAt: number,
+    freq: number,
+    gain: number,
+    reverb: number,
+    dur = 0.5,
+  ) => {
+    const cluster = audio.createGain()
+    cluster.gain.value = 1
+    cluster.connect(audio.destination)
+    if (reverb > 0) {
+      const send = audio.createGain()
+      send.gain.value = reverb
+      cluster.connect(send).connect(getReverbInput(audio))
+    }
+    for (const p of HARP_PARTIALS) {
+      const osc = audio.createOscillator()
+      osc.type = p.type
+      osc.frequency.setValueAtTime(freq * p.ratio, startAt)
+      const g = audio.createGain()
+      g.gain.setValueAtTime(0.0001, startAt)
+      g.gain.exponentialRampToValueAtTime(gain * p.gain, startAt + 0.005)
+      g.gain.exponentialRampToValueAtTime(0.0001, startAt + dur)
+      osc.connect(g).connect(cluster)
+      osc.start(startAt)
+      osc.stop(startAt + dur + 0.02)
+    }
+  }
+
+  // E-мажорная пентатоника на пару октав (тот же строй, что у `reveal`).
+  // Высоту щипков квантуем по ней — перебор всегда «в ладу», без фальши и
+  // без «булькающего» скольжения непрерывной частоты.
+  const HARP_SCALE = [
+    329.63, // E4
+    369.99, // F#4
+    415.3, // G#4
+    493.88, // B4
+    554.37, // C#5
+    659.25, // E5
+    739.99, // F#5
+    830.61, // G#5
+    987.77, // B5
+    1108.73, // C#6
+    1318.51, // E6
+  ]
+
+  // Растряска = мягкий арфовый перебор: щипок повторяется циклично, нота
+  // выбирается из пентатоники (всегда «в ладу»), на каждом повторе чуть
+  // случайно меняется громкость. Чем сильнее зажатие (setIntensity), тем выше
+  // регистр перебора и чаще щипки (будто арфист разыгрывается перед броском).
+  const startShakeLoop = (audio: AudioContext): SoundLoop => {
+    let stopped = false
+    let intensity = 0.05
+    let timer: ReturnType<typeof setTimeout> | undefined
+
+    const SPAN = 4 // ширина «окна» нот, по которому скачет перебор
+    const tick = () => {
+      if (stopped) return
+      const v = clamp01(intensity)
+      const t = audio.currentTime
+      // Окно нот поднимается по шкале с интенсивностью; внутри окна — случайная.
+      const base = Math.round(v * (HARP_SCALE.length - 1 - SPAN))
+      const idx = base + Math.floor(Math.random() * (SPAN + 1))
+      const freq = HARP_SCALE[idx]
+      const gain = (0.05 + v * 0.06) * (0.85 + Math.random() * 0.3)
+      playHarp(audio, t, freq, gain, 0.32, 0.5)
+      // Интервал сжимается с интенсивностью: неспешно (~260 мс) → живо (~110 мс).
+      const next = (260 - v * 150) * (0.8 + Math.random() * 0.4)
+      timer = setTimeout(tick, next)
+    }
+    tick()
+
+    return {
+      setIntensity(value: number) {
+        if (stopped) return
+        intensity = clamp01(value)
+      },
+      stop() {
+        if (stopped) return
+        stopped = true
+        if (timer != null) clearTimeout(timer)
+        // Уже запущенные «звяки» догасают сами — обрывать их не нужно.
+      },
+    }
+  }
+
+  // Вращение/раскрутка = ниспадающий арфовый каскад (как глиссандо вниз в
+  // финальном аккорде, только рассыпающееся): щипки идут сверху вниз по
+  // пентатонике и редеют со временем — «оседают». Не зависит от интенсивности:
+  // живёт от scramble до settle. На stop() прекращаем планировать новые щипки.
+  const startSpinLoop = (audio: AudioContext): SoundLoop => {
+    let stopped = false
+    const startedAt = audio.currentTime
+    let timer: ReturnType<typeof setTimeout> | undefined
+
+    const FALL = 1.6 // время «осыпания», с
+    const top = HARP_SCALE.length - 1
+    const tick = () => {
+      if (stopped) return
+      const t = audio.currentTime
+      const elapsed = t - startedAt
+      const fade = Math.max(0, 1 - elapsed / FALL)
+      // Индекс ноты спускается сверху вниз по шкале со временем (± лёгкий разброс).
+      const idx = Math.max(
+        0,
+        Math.round(top - (elapsed / FALL) * top - Math.random() * 1.5),
+      )
+      const freq = HARP_SCALE[idx]
+      const gain = (0.05 + fade * 0.06) * (0.85 + Math.random() * 0.3)
+      playHarp(audio, t, freq, gain, 0.3, 0.45)
+      // Каскад редеет: интервал растёт по мере осыпания.
+      const next = (70 + elapsed * 80) * (0.8 + Math.random() * 0.4)
+      timer = setTimeout(tick, next)
+    }
+    tick()
+
+    return {
+      setIntensity() {
+        /* раскрутка не зависит от интенсивности — осыпается по своему таймеру */
+      },
+      stop() {
+        if (stopped) return
+        stopped = true
+        if (timer != null) clearTimeout(timer)
+      },
+    }
+  }
+
   return {
     play(event: SoundEvent) {
       if (!deps.isEnabled()) return
@@ -256,6 +468,15 @@ export function createWebAudioSoundPlayer(deps: WebAudioSoundPlayerDeps): SoundP
       for (const voice of VOICES[event]) {
         playVoice(audio, voice, startAt)
       }
+    },
+    loop(event: LoopEvent): SoundLoop {
+      if (!deps.isEnabled()) return noopSoundLoop
+      const audio = ensureContext()
+      if (!audio) return noopSoundLoop
+      if (audio.state === 'suspended') {
+        void audio.resume()
+      }
+      return event === 'shake' ? startShakeLoop(audio) : startSpinLoop(audio)
     },
   }
 }
