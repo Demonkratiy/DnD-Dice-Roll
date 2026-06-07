@@ -19,6 +19,9 @@ export type SoundEvent =
   | 'reveal'
   | 'critSuccess'
   | 'critFail'
+  | 'stepUp'
+  | 'stepDown'
+  | 'modeShift'
 
 /**
  * Идентификаторы непрерывных (sustained) звуков, тянущихся во времени.
@@ -42,6 +45,11 @@ export interface SoundPlayer {
   play(event: SoundEvent): void
   /** Запустить непрерывный звук; вернуть управляющий хэндл. */
   loop(event: LoopEvent): SoundLoop
+  /**
+   * Сыграть ноту по индексу из «кубичной» гаммы (0..6). Выбор кубика звучит
+   * как нота: 7 номиналов = 7 нот (до-ре-ми-…), можно наиграть мелодию.
+   */
+  playNote(index: number): void
 }
 
 /** Тихий хэндл-заглушка для непрерывного звука. */
@@ -60,6 +68,9 @@ export const noopSoundPlayer: SoundPlayer = {
     /* намеренно ничего не делаем */
   },
   loop: () => noopSoundLoop,
+  playNote: () => {
+    /* намеренно ничего не делаем */
+  },
 }
 
 /** Зависимости веб-аудио-проигрывателя (инъектируются ради тестируемости). */
@@ -249,6 +260,26 @@ const VOICES: Record<SoundEvent, Voice[]> = {
     { type: 'triangle', freq: 164.81, gain: 0.11, duration: 0.85, attack: 0.006, reverb: 0.35, vary: 0, delay: 0.78 }, // E3 (квинта)
     { type: 'sine', freq: 110, gain: 0.2, duration: 0.95, attack: 0.008, reverb: 0.3, vary: 0, delay: 0.78 }, // A2 бас
   ],
+  // --- UI-«тактильность»: короткие тихие арфовые отклики на действия. Тот же
+  // тёплый тембр (triangle + sine-октава, vary: 0), что у сцены, — интерфейс
+  // звучит «в одном инструменте» с броском, но ненавязчиво (малый gain). ---
+  // (Смена номинала кубика озвучивается не отсюда, а нотой гаммы — см. playNote.)
+  // Шаг «+» (увеличение) — короткий высокий щелчок E5: движение вверх = выше тон.
+  stepUp: [
+    { type: 'triangle', freq: 659.25, gain: 0.07, duration: 0.13, attack: 0.003, reverb: 0.2, vary: 0 }, // E5
+    { type: 'sine', freq: 1318.51, gain: 0.025, duration: 0.14, attack: 0.003, reverb: 0.24, vary: 0 }, // E6 блик
+  ],
+  // Шаг «−» (уменьшение) — тот же щелчок ниже (B4): вниз = ниже тон.
+  stepDown: [
+    { type: 'triangle', freq: 493.88, gain: 0.07, duration: 0.13, attack: 0.003, reverb: 0.2, vary: 0 }, // B4
+    { type: 'sine', freq: 987.77, gain: 0.025, duration: 0.14, attack: 0.003, reverb: 0.24, vary: 0 }, // B5 блик
+  ],
+  // Смена режима d20 — быстрый восходящий «флик» из двух нот (E5→B5): лёгкий
+  // намёк на перелистывание варианта в барабане.
+  modeShift: [
+    { type: 'triangle', freq: 659.25, gain: 0.07, duration: 0.14, attack: 0.003, reverb: 0.22, vary: 0 }, // E5
+    { type: 'triangle', freq: 987.77, gain: 0.07, duration: 0.18, attack: 0.003, reverb: 0.26, vary: 0, delay: 0.06 }, // B5
+  ],
 }
 
 /**
@@ -373,6 +404,19 @@ export function createWebAudioSoundPlayer(deps: WebAudioSoundPlayerDeps): SoundP
     1318.51, // E6
   ]
 
+  // «Кубичная» гамма: 7 кубиков (d4…d100) = 7 нот восходящей C-мажорной гаммы
+  // (до-ре-ми-фа-соль-ля-си). Выбор кубика играет свою ноту, и на ленте можно
+  // «наиграть» мелодию. Высота растёт с номиналом — крупнее кубик = выше нота.
+  const DIE_NOTES = [
+    523.25, // C5  до   — d4
+    587.33, // D5  ре   — d6
+    659.25, // E5  ми   — d8
+    698.46, // F5  фа   — d10
+    783.99, // G5  соль — d12
+    880.0, // A5  ля   — d20
+    987.77, // B5  си   — d100
+  ]
+
   // Растряска = мягкий арфовый перебор: щипок повторяется циклично, нота
   // выбирается из пентатоники (всегда «в ладу»), на каждом повторе чуть
   // случайно меняется громкость. Чем сильнее зажатие (setIntensity), тем выше
@@ -477,6 +521,18 @@ export function createWebAudioSoundPlayer(deps: WebAudioSoundPlayerDeps): SoundP
         void audio.resume()
       }
       return event === 'shake' ? startShakeLoop(audio) : startSpinLoop(audio)
+    },
+    playNote(index: number) {
+      if (!deps.isEnabled()) return
+      const audio = ensureContext()
+      if (!audio) return
+      if (audio.state === 'suspended') {
+        void audio.resume()
+      }
+      // Индекс вне диапазона мягко зажимаем в гамму — звук всегда «в ладу».
+      const i = Math.min(DIE_NOTES.length - 1, Math.max(0, Math.round(index)))
+      // Чуть длиннее и звонче обычного UI-щипка — нота должна «петь».
+      playHarp(audio, audio.currentTime, DIE_NOTES[i], 0.12, 0.3, 0.6)
     },
   }
 }

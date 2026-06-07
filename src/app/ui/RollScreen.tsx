@@ -11,7 +11,7 @@ import { createLocalRollSource, createWebAudioSoundPlayer } from '@shared/servic
 import { useReducedMotion, createLoadedRng, type LoadedRollMode } from '@shared/lib'
 import { useT } from '@shared/locale'
 import { createLocalPlayer, ClassIcon } from '@entities/player'
-import type { DieType } from '@entities/die'
+import { DIE_TYPES, type DieType } from '@entities/die'
 import type { RollMode, RollRequest, RollResult } from '@entities/roll'
 import { Stage } from '@features/stage'
 import { DicePicker } from '@features/dice-picker'
@@ -82,6 +82,10 @@ export function RollScreen() {
       setMode('normal')
     }
     setDie(next)
+    // 7 кубиков = 7 нот: выбор номинала играет свою ноту C-мажорной гаммы
+    // (до-ре-ми-…). Ноту даём на КАЖДЫЙ клик (даже по тому же кубику), чтобы
+    // по ленте можно было «наиграть» мелодию с повторами.
+    soundPlayer.playNote(DIE_TYPES.indexOf(next))
   }
 
   const handleResult = (result: RollResult) => addRoll(result)
@@ -136,6 +140,7 @@ export function RollScreen() {
           onCountChange={setCount}
           onModifierChange={setModifier}
           onModeChange={setMode}
+          soundPlayer={soundPlayer}
         />
       </main>
 

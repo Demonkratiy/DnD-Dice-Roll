@@ -11,6 +11,7 @@ import { Stepper, WheelPicker } from '@shared/ui'
 import type { DieType } from '@entities/die'
 import type { RollMode } from '@entities/roll'
 import { useT } from '@shared/locale'
+import { noopSoundPlayer, type SoundPlayer } from '@shared/services'
 import styles from './RollControls.module.css'
 
 export interface RollControlsProps {
@@ -22,6 +23,8 @@ export interface RollControlsProps {
   onModifierChange: (modifier: number) => void
   onModeChange: (mode: RollMode) => void
   maxCount?: number
+  /** Звуковой отклик на действия (шаги +/−, смена режима). По умолчанию тихий. */
+  soundPlayer?: SoundPlayer
 }
 
 /**
@@ -56,6 +59,7 @@ export function RollControls({
   onModifierChange,
   onModeChange,
   maxCount = 12,
+  soundPlayer = noopSoundPlayer,
 }: RollControlsProps) {
   const t = useT()
   const isD20 = die === 'd20'
@@ -67,8 +71,19 @@ export function RollControls({
     { value: 'elven', label: t.rollControls.modeElven },
   ]
 
+  // Шаг степпера озвучиваем по направлению: вверх — выше тон, вниз — ниже.
+  const handleCountChange = (next: number) => {
+    soundPlayer.play(next > count ? 'stepUp' : 'stepDown')
+    onCountChange(next)
+  }
+  const handleModifierChange = (next: number) => {
+    soundPlayer.play(next > modifier ? 'stepUp' : 'stepDown')
+    onModifierChange(next)
+  }
+
   const handleD20Change = (option: D20Option) => {
     const variant = D20_VARIANTS[option]
+    soundPlayer.play('modeShift')
     onModeChange(variant.mode)
     onCountChange(variant.count)
   }
@@ -76,14 +91,14 @@ export function RollControls({
   return (
     <div className={styles.controls}>
       {!isD20 && (
-        <Stepper label={t.rollControls.count} value={count} min={1} max={maxCount} onChange={onCountChange} />
+        <Stepper label={t.rollControls.count} value={count} min={1} max={maxCount} onChange={handleCountChange} />
       )}
       <Stepper
         label={t.rollControls.modifier}
         value={modifier}
         min={-20}
         max={20}
-        onChange={onModifierChange}
+        onChange={handleModifierChange}
         format={(v) => (v > 0 ? `+${v}` : `${v}`)}
       />
       {isD20 && (

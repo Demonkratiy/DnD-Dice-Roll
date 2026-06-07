@@ -151,6 +151,23 @@ describe('createWebAudioSoundPlayer', () => {
       loop.stop()
     }).not.toThrow()
   })
+
+  it('plays a die note lazily and clamps out-of-range indices', () => {
+    const player = createWebAudioSoundPlayer({ isEnabled: () => true })
+    expect(() => {
+      player.playNote(0)
+      player.playNote(6)
+      player.playNote(99) // вне диапазона — зажимается в гамму
+      player.playNote(-3)
+    }).not.toThrow()
+    expect(FakeAudioContext.instances).toBe(1)
+  })
+
+  it('does not play a die note when sound is disabled', () => {
+    const player = createWebAudioSoundPlayer({ isEnabled: () => false })
+    player.playNote(2)
+    expect(FakeAudioContext.instances).toBe(0)
+  })
 })
 
 describe('noopSoundPlayer', () => {
@@ -160,6 +177,7 @@ describe('noopSoundPlayer', () => {
     expect(() => {
       loop.setIntensity(0.5)
       loop.stop()
+      noopSoundPlayer.playNote(3)
     }).not.toThrow()
   })
 })
