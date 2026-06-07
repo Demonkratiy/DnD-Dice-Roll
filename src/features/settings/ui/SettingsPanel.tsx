@@ -8,6 +8,7 @@
 import { Switch, Segmented } from '@shared/ui'
 import type { LoadedRollMode } from '@shared/lib'
 import { DEV_TOOLS_ENABLED } from '@shared/config'
+import { noopSoundPlayer, type SoundPlayer } from '@shared/services'
 import {
   useShape,
   SHAPES,
@@ -34,6 +35,8 @@ export interface SettingsPanelProps {
   /** DEV-only: форс-бросок для теста крит-эффектов. */
   forceRoll: ForceRollMode
   onForceRollChange: (value: ForceRollMode) => void
+  /** Опционально: проигрыватель UI-звуков (тумблеры, переключатели). */
+  soundPlayer?: SoundPlayer
 }
 
 export function SettingsPanel({
@@ -47,6 +50,7 @@ export function SettingsPanel({
   onSoundEnabledChange,
   forceRoll,
   onForceRollChange,
+  soundPlayer = noopSoundPlayer,
 }: SettingsPanelProps) {
   const { shapeId, setShape } = useShape()
   const { colorId, setColor } = useColor()
@@ -55,6 +59,12 @@ export function SettingsPanel({
 
   if (!open) {
     return null
+  }
+
+  /** Тумблер: звук зависит от нового состояния (вкл — выше, выкл — ниже). */
+  const handleToggle = (onChange: (value: boolean) => void) => (value: boolean) => {
+    soundPlayer.play(value ? 'toggleOn' : 'toggleOff')
+    onChange(value)
   }
 
   const themeOptions = SHAPES.map((shape) => ({ value: shape.id, label: t.themeNames[shape.id] }))
@@ -83,7 +93,10 @@ export function SettingsPanel({
             label={t.language.label}
             options={languageOptions}
             value={lang}
-            onChange={(value: LanguageId) => setLanguage(value)}
+            onChange={(value: LanguageId) => {
+              soundPlayer.play('segment')
+              setLanguage(value)
+            }}
           />
         </div>
 
@@ -93,7 +106,10 @@ export function SettingsPanel({
             label={t.settings.themeAria}
             options={themeOptions}
             value={shapeId}
-            onChange={(value: ShapeId) => setShape(value)}
+            onChange={(value: ShapeId) => {
+              soundPlayer.play('segment')
+              setShape(value)
+            }}
           />
         </div>
 
@@ -103,21 +119,24 @@ export function SettingsPanel({
             label={t.settings.colorAria}
             options={accentOptions}
             value={colorId}
-            onChange={(value: ColorId) => setColor(value)}
+            onChange={(value: ColorId) => {
+              soundPlayer.play('segment')
+              setColor(value)
+            }}
           />
         </div>
 
         <div className={styles.group}>
-          <Switch label={t.settings.showLogs} checked={showLogs} onChange={onShowLogsChange} />
+          <Switch label={t.settings.showLogs} checked={showLogs} onChange={handleToggle(onShowLogsChange)} />
           <Switch
             label={t.settings.disableAnimations}
             checked={disableAnimations}
-            onChange={onDisableAnimationsChange}
+            onChange={handleToggle(onDisableAnimationsChange)}
           />
           <Switch
             label={t.settings.sound}
             checked={soundEnabled}
-            onChange={onSoundEnabledChange}
+            onChange={handleToggle(onSoundEnabledChange)}
           />
         </div>
 

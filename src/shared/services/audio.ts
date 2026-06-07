@@ -22,6 +22,13 @@ export type SoundEvent =
   | 'stepUp'
   | 'stepDown'
   | 'modeShift'
+  | 'panelOpen'
+  | 'panelClose'
+  | 'toggleOn'
+  | 'toggleOff'
+  | 'segment'
+  | 'clearLog'
+  | 'selectClass'
 
 /**
  * Идентификаторы непрерывных (sustained) звуков, тянущихся во времени.
@@ -279,6 +286,44 @@ const VOICES: Record<SoundEvent, Voice[]> = {
   modeShift: [
     { type: 'triangle', freq: 659.25, gain: 0.07, duration: 0.14, attack: 0.003, reverb: 0.22, vary: 0 }, // E5
     { type: 'triangle', freq: 987.77, gain: 0.07, duration: 0.18, attack: 0.003, reverb: 0.26, vary: 0, delay: 0.06 }, // B5
+  ],
+  // Открытие панели (настройки/редактор/лента логов) — мягкий восходящий «вздох»
+  // из двух нот (E5→B5) чуть длиннее обычного UI-щипка: «занавес поднимается».
+  panelOpen: [
+    { type: 'triangle', freq: 659.25, gain: 0.07, duration: 0.2, attack: 0.005, reverb: 0.26, vary: 0 }, // E5
+    { type: 'triangle', freq: 987.77, gain: 0.07, duration: 0.26, attack: 0.005, reverb: 0.3, vary: 0, delay: 0.07 }, // B5
+    { type: 'sine', freq: 1318.51, gain: 0.025, duration: 0.24, attack: 0.005, reverb: 0.34, vary: 0, delay: 0.07 }, // E6 блик
+  ],
+  // Закрытие панели — то же движение вниз (B5→E5) и тише: «занавес опускается».
+  panelClose: [
+    { type: 'triangle', freq: 987.77, gain: 0.055, duration: 0.18, attack: 0.005, reverb: 0.24, vary: 0 }, // B5
+    { type: 'triangle', freq: 659.25, gain: 0.06, duration: 0.24, attack: 0.005, reverb: 0.28, vary: 0, delay: 0.07 }, // E5
+  ],
+  // Тумблер «вкл» — короткий восходящий щипок (G5→B5), светлый и утвердительный.
+  toggleOn: [
+    { type: 'triangle', freq: 783.99, gain: 0.07, duration: 0.12, attack: 0.003, reverb: 0.2, vary: 0 }, // G5
+    { type: 'triangle', freq: 987.77, gain: 0.07, duration: 0.16, attack: 0.003, reverb: 0.24, vary: 0, delay: 0.05 }, // B5
+  ],
+  // Тумблер «выкл» — зеркальный нисходящий щипок (E5→C5), мягкий «отбой».
+  toggleOff: [
+    { type: 'triangle', freq: 659.25, gain: 0.06, duration: 0.12, attack: 0.003, reverb: 0.2, vary: 0 }, // E5
+    { type: 'triangle', freq: 523.25, gain: 0.06, duration: 0.16, attack: 0.003, reverb: 0.24, vary: 0, delay: 0.05 }, // C5
+  ],
+  // Сегмент (тема/цвет/язык) — одиночный короткий «тик» A5: нейтральный выбор.
+  segment: [
+    { type: 'triangle', freq: 880, gain: 0.06, duration: 0.12, attack: 0.003, reverb: 0.2, vary: 0 }, // A5
+    { type: 'sine', freq: 1760, gain: 0.02, duration: 0.12, attack: 0.003, reverb: 0.24, vary: 0 }, // A6 блик
+  ],
+  // Очистка лога — быстрый нисходящий «смах» из трёх нот (B5→G5→E5): «стираем».
+  clearLog: [
+    { type: 'triangle', freq: 987.77, gain: 0.06, duration: 0.12, attack: 0.003, reverb: 0.22, vary: 0 }, // B5
+    { type: 'triangle', freq: 783.99, gain: 0.06, duration: 0.13, attack: 0.003, reverb: 0.22, vary: 0, delay: 0.06 }, // G5
+    { type: 'triangle', freq: 659.25, gain: 0.06, duration: 0.18, attack: 0.003, reverb: 0.26, vary: 0, delay: 0.12 }, // E5
+  ],
+  // Выбор класса героя — тёплый утвердительный щипок C5 с октавным бликом.
+  selectClass: [
+    { type: 'triangle', freq: 523.25, gain: 0.09, duration: 0.3, attack: 0.004, reverb: 0.28, vary: 0 }, // C5
+    { type: 'sine', freq: 1046.5, gain: 0.035, duration: 0.32, attack: 0.004, reverb: 0.32, vary: 0 }, // C6 блик
   ],
 }
 

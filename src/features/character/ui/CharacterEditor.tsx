@@ -11,6 +11,7 @@
 
 import { PLAYER_CLASSES, ClassIcon, type PlayerClassId } from '@entities/player'
 import { useT } from '@shared/locale'
+import { noopSoundPlayer, type SoundPlayer } from '@shared/services'
 import styles from './CharacterEditor.module.css'
 
 export interface CharacterEditorProps {
@@ -20,6 +21,8 @@ export interface CharacterEditorProps {
   onNameChange: (name: string) => void
   classId: PlayerClassId | undefined
   onClassChange: (classId: PlayerClassId | undefined) => void
+  /** Опционально: проигрыватель UI-звуков (выбор класса). */
+  soundPlayer?: SoundPlayer
 }
 
 export function CharacterEditor({
@@ -29,11 +32,18 @@ export function CharacterEditor({
   onNameChange,
   classId,
   onClassChange,
+  soundPlayer = noopSoundPlayer,
 }: CharacterEditorProps) {
   const t = useT()
 
   if (!open) {
     return null
+  }
+
+  /** Выбор класса: тёплый щипок + проброс наружу. */
+  const selectClass = (next: PlayerClassId | undefined) => {
+    soundPlayer.play('selectClass')
+    onClassChange(next)
   }
 
   /** Выбор класса с клавиатуры (Enter): выбрать и сразу закрыть окно.
@@ -44,7 +54,7 @@ export function CharacterEditor({
   ) => {
     if (event.key === 'Enter') {
       event.preventDefault()
-      onClassChange(next)
+      selectClass(next)
       onClose()
     }
   }
@@ -93,7 +103,7 @@ export function CharacterEditor({
               className={`${styles.cell} ${styles.cellNone} ${classId === undefined ? styles.active : ''}`}
               role="radio"
               aria-checked={classId === undefined}
-              onClick={() => onClassChange(undefined)}
+              onClick={() => selectClass(undefined)}
               onKeyDown={(event) => handleClassKeyDown(event, undefined)}
             >
               <span className={styles.cellIcon} aria-hidden="true">
@@ -111,7 +121,7 @@ export function CharacterEditor({
                   className={`${styles.cell} ${active ? styles.active : ''}`}
                   role="radio"
                   aria-checked={active}
-                  onClick={() => onClassChange(cls.id)}
+                  onClick={() => selectClass(cls.id)}
                   onKeyDown={(event) => handleClassKeyDown(event, cls.id)}
                 >
                   <ClassIcon classId={cls.id} size={32} className={styles.cellIcon} />
